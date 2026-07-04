@@ -1,21 +1,22 @@
 # Aplikacja: Family-recipes
 
-Poniżej pierwsza wersja product requirements dla MVP. Do weryfikacji i ustalenia szczegółów.
+Product requirements dla MVP. Sekcje oznaczone **(potwierdzone)** zostały zatwierdzone w rozmowie. Punkty oznaczone **(do potwierdzenia)** czekają na decyzję.
 
 ---
 
 ## 0. Wspólny core z gear-stack (boilerplate)
 
-Family-recipes ma współdzielić wspólny core z projektem **gear-stack** (https://github.com/jm-sky/gear-stack), traktowanym jako boilerplate: kod, wzorce (patterns), dobre praktyki, sposób pisania changelogów itd.
+Family-recipes współdzieli wspólny core z projektem **gear-stack** (https://github.com/jm-sky/gear-stack), traktowanym jako boilerplate: kod, wzorce (patterns), dobre praktyki, sposób pisania changelogów itd. **(potwierdzone)**
 
-Z gear-stack chcemy przenieść (dokładny zakres do ustalenia):
+Z gear-stack przenosimy (dokładny zakres do ustalenia w trakcie):
 - Docker Compose infrastructure (backend + baza danych)
 - Backend CLI (zarządzanie bazą, użytkownikami itd.)
-- Users / auth (WebAuthn/passkeys, JWT)
-- OAuth
+- Users / auth (email+hasło, WebAuthn/passkeys, JWT)
+- OAuth (Google)
 - 2FA
 - Integrację z OpenRouter (AI)
 - Konfigurację linterów i narzędzi jakości kodu
+- Frontend Vue 3: layouty, komponenty (shadcn-vue / reka-ui), rejestr i18n, konfiguracja PWA, setup TanStack Query, stores/patterns
 
 Proces tworzenia nowej aplikacji na bazie tego core'u:
 1. Skopiuj całość z gear-stack
@@ -36,11 +37,14 @@ Proces tworzenia nowej aplikacji na bazie tego core'u:
 - Kategorie (edytowalne przez użytkowników)
 - Szybkie dodawanie (tekst)
 - Strukturalizacja (kategoria, ilość, jednostka)
+- Odhaczanie pozycji (kupione / niekupione) **(potwierdzone)**
+- Dodawanie składników z przepisu do listy jednym kliknięciem, w tym „dorzuć brakujące składniki" **(potwierdzone)**
+- Sumowanie pozycji: ten sam składnik dodany wielokrotnie sumuje się w jedną pozycję **(potwierdzone)**
+  - Założenie: sumujemy tylko gdy jednostka się zgadza (2 jajka + 3 jajka = 5 jajek); przy różnych jednostkach (np. 200 g + 1 szklanka) pozostają osobne pozycje **(do potwierdzenia)**
 - Współdzielenie w rodzinie
 - Offline support + cache
 - Sync po powrocie online
-- Konflikty danych:
-  - podejście hybrydowe (zależnie od typu danych)
+- Konflikty danych: podejście hybrydowe — szczegóły w [docs/sync-and-conflicts.md](docs/sync-and-conflicts.md)
 - Brak realtime sync w MVP
 - Brak push notifications
 
@@ -51,26 +55,29 @@ Proces tworzenia nowej aplikacji na bazie tego core'u:
 - Wspólne dla rodziny
 - Kategorie (śniadania, obiady, kolacje, desery)
 - Tagi
-- Składniki + porcje (bez kroków w MVP)
-- Import z linku (manualny)
+- Składniki + porcje
+- **Bez kroków przygotowania w MVP** — przepis zawiera **link do źródła**, gdzie znajduje się pełny opis z krokami **(potwierdzone)**
+- Zdjęcie przepisu (wymaga storage plików — w gear-stack jest storage adapter) **(potwierdzone)**
+- Import z linku (manualny + wspomagany AI, patrz sekcja 4)
 
 ---
 
 ## 4. AI (OpenRouter)
-- Import przepisów z linków (główna funkcja AI)
-- Rozpoznawanie składników i jednostek
-- Normalizacja danych
+- **Import przepisów z linków — główna i jedyna pewna funkcja AI w MVP** **(potwierdzone)**
+  - Rozpoznawanie składników i jednostek
+  - Normalizacja danych
 - Architektura gotowa na rozszerzenia AI
-- Sugestie posiłków:
-  - „coś lekkiego”
-  - „obiad 30 min”
-  - „mam X składników”
+- **Faza 2** (poza MVP): sugestie posiłków
+  - „coś lekkiego"
+  - „obiad 30 min"
+  - „mam X składników"
 
 ---
 
 ## 5. Użytkownicy i rodzina
-- Google OAuth (już istniejący boilerplate)
-- 1 użytkownik = 1 rodzina
+- Auth: **Google OAuth + email/hasło + WebAuthn/passkeys + 2FA** (wszystko z boilerplate) **(potwierdzone)**
+- **1 użytkownik = 1 rodzina**, bez przełączania między rodzinami **(potwierdzone)**
+- Opuszczenie / zmiana rodziny — poza zakresem MVP **(potwierdzone)**
 - Tworzenie rodziny + zaproszenia linkiem
 - Wszyscy użytkownicy mają równe uprawnienia
 
@@ -80,7 +87,7 @@ Proces tworzenia nowej aplikacji na bazie tego core'u:
 - Backend jako source of truth (Postgres)
 - Lokalny cache (offline-first częściowo)
 - Pełny sync po reconnect
-- Konflikty: hybrydowe podejście
+- Konflikty: podejście hybrydowe — szczegóły w [docs/sync-and-conflicts.md](docs/sync-and-conflicts.md)
 
 ---
 
@@ -92,8 +99,11 @@ Proces tworzenia nowej aplikacji na bazie tego core'u:
 ---
 
 ## 8. Technologia
-- Frontend: React + Tailwind
-- Jedna baza kodu (web + Android)
+- Frontend: **Vue 3 + Tailwind** (shadcn-vue / reka-ui) — jak gear-stack **(potwierdzone)**
+- **PWA** (vite-plugin-pwa) — instalowalna aplikacja z offline **(potwierdzone)**
+- Jedna baza kodu web + Android:
+  - MVP: PWA (Android = zainstalowana PWA) **(potwierdzone)**
+  - W razie potrzeby natywnych funkcji Androida: opakowanie tej samej bazy w Capacitor (bez przepisywania)
 - Backend: FastAPI
 - DB: Postgres
 - Docker (całość środowiska)
