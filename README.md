@@ -4,6 +4,27 @@ Poniżej pierwsza wersja product requirements dla MVP. Do weryfikacji i ustaleni
 
 ---
 
+## 0. Wspólny core z gear-stack (boilerplate)
+
+Family-recipes ma współdzielić wspólny core z projektem **gear-stack** (https://github.com/jm-sky/gear-stack), traktowanym jako boilerplate: kod, wzorce (patterns), dobre praktyki, sposób pisania changelogów itd.
+
+Z gear-stack chcemy przenieść (dokładny zakres do ustalenia):
+- Docker Compose infrastructure (backend + baza danych)
+- Backend CLI (zarządzanie bazą, użytkownikami itd.)
+- Users / auth (WebAuthn/passkeys, JWT)
+- OAuth
+- 2FA
+- Integrację z OpenRouter (AI)
+- Konfigurację linterów i narzędzi jakości kodu
+
+Proces tworzenia nowej aplikacji na bazie tego core'u:
+1. Skopiuj całość z gear-stack
+2. Usuń rzeczy niepotrzebne w nowej domenie
+3. Podmień fragmenty i słowa kluczowe specyficzne dla gear-stack
+4. Dodaj logikę specyficzną dla domeny jako nowy moduł w `modules/`
+
+---
+
 ## 1. Zakres MVP
 - Lista zakupów + przepisy
 - System rodzinny (multi-user)
