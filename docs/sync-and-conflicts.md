@@ -21,14 +21,26 @@ Strategia rozwiązywania konfliktów zależy od typu operacji:
 - **Merge przy dodawaniu**: równoległe dodanie różnych pozycji przez dwóch członków
   rodziny skutkuje sumą obu zbiorów — żadna pozycja nie jest gubiona.
 - **Sumowanie składników**: przy dodawaniu tego samego składnika (patrz README, sekcja 2)
-  pozycje sumują się w jedną, o ile jednostka się zgadza.
-  - *(do potwierdzenia)* zachowanie przy różnych jednostkach.
-- **Last-write-wins** wymaga znacznika czasu / wersji na rekordzie (do doprecyzowania
-  na etapie modelu danych: `updated_at` po stronie serwera vs. zegar klienta).
+  pozycje sumują się w jedną, przeliczając jednostki przez mapę konwersji per
+  składnik (`IngredientUnit`, patrz [data-model.md](data-model.md)).
+  - **Przy różnych, przeliczalnych jednostkach** — łączą się w jedną (konwersja do
+    `base_unit`). **Brak mapowania jednostki dla składnika → pozycje osobne.**
+- **Last-write-wins** rozstrzygane po **serwerowym `updated_at`** (nie zegar klienta),
+  co eliminuje rozjazd zegarów. Klient wysyła zmiany; serwer stempluje `updated_at`
+  i on jest arbitrem.
+
+## Mechanizm (rozstrzygnięte)
+
+- **Wykrywanie zmian od ostatniego synca**: kursor oparty o serwerowy `updated_at`
+  (`GET /api/sync/changes?since=`). Usunięcia jako **tombstones** — rekord z
+  `deleted_at` (soft-delete), nie fizyczne skasowanie, dopóki wszyscy klienci nie
+  zsynchronizują.
+- **Delete vs. równoległa edycja**: traktujemy delete jako update ustawiający
+  `deleted_at`; wygrywa operacja z **późniejszym serwerowym znacznikiem** (LWW).
+  Spójne z resztą — brak osobnej reguły „delete-wins/update-wins".
+- **Źródło znacznika czasu**: wyłącznie serwer (`updated_at`/`deleted_at` z DB).
 
 ## Do doprecyzowania
 
-- Mechanizm wykrywania zmian od ostatniego synca (np. `updated_at` / cursor / tombstones
-  dla usunięć).
-- Usuwanie pozycji vs. równoległa edycja (delete vs. update) — którą stronę preferujemy.
-- Źródło znacznika czasu dla last-write-wins (serwer vs. klient) i tolerancja rozjazdu zegarów.
+- Prezentacja jednostki po zsumowaniu pozycji o różnych jednostkach (jednostka
+  pierwszej pozycji vs. `base_unit`) — patrz build-plan „Otwarte decyzje".

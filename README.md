@@ -2,13 +2,19 @@
 
 Product requirements dla MVP. Sekcje oznaczone **(potwierdzone)** zostały zatwierdzone w rozmowie. Punkty oznaczone **(do potwierdzenia)** czekają na decyzję.
 
+**Dokumenty wykonawcze** (konkretny, budowalny spec dla realizacji przez Fable):
+- [docs/build-plan.md](docs/build-plan.md) — fazowy plan budowy z boilerplate'u gear-stack + mapa rebrandingu i moduły.
+- [docs/data-model.md](docs/data-model.md) — encje, pola, relacje.
+- [docs/api.md](docs/api.md) — REST API (endpointy).
+- [docs/sync-and-conflicts.md](docs/sync-and-conflicts.md) — offline / rozstrzyganie konfliktów.
+
 ---
 
 ## 0. Wspólny core z gear-stack (boilerplate)
 
 Family-recipes współdzieli wspólny core z projektem **gear-stack** (https://github.com/jm-sky/gear-stack), traktowanym jako boilerplate: kod, wzorce (patterns), dobre praktyki, sposób pisania changelogów itd. **(potwierdzone)**
 
-Z gear-stack przenosimy (dokładny zakres do ustalenia w trakcie):
+Z gear-stack przenosimy (dokładny zakres: patrz [docs/build-plan.md](docs/build-plan.md)):
 - Docker Compose infrastructure (backend + baza danych)
 - Backend CLI (zarządzanie bazą, użytkownikami itd.)
 - Users / auth (email+hasło, WebAuthn/passkeys, JWT)
