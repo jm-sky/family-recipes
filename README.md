@@ -37,10 +37,12 @@ Proces tworzenia nowej aplikacji na bazie tego core'u:
 - Kategorie (edytowalne przez użytkowników)
 - Szybkie dodawanie (tekst)
 - Strukturalizacja (kategoria, ilość, jednostka)
+- Jednostki: **predefiniowana lista** (g, kg, ml, l, szt., szklanka, łyżka…) **(potwierdzone)**
 - Odhaczanie pozycji (kupione / niekupione) **(potwierdzone)**
 - Dodawanie składników z przepisu do listy jednym kliknięciem, w tym „dorzuć brakujące składniki" **(potwierdzone)**
 - Sumowanie pozycji: ten sam składnik dodany wielokrotnie sumuje się w jedną pozycję **(potwierdzone)**
-  - Założenie: sumujemy tylko gdy jednostka się zgadza (2 jajka + 3 jajka = 5 jajek); przy różnych jednostkach (np. 200 g + 1 szklanka) pozostają osobne pozycje **(do potwierdzenia)**
+  - Sumowanie korzysta z **mapy konwersji jednostek zależnej od składnika** (np. szklanka mąki = N g mąki; szklanka mąki ≠ szklanka cukru) — pozycje o różnych, ale przeliczalnych jednostkach lączą się w jedną **(potwierdzone)**
+  - Wymaga zbioru konwersji per składnik (dataset do zbudowania; AI może pomóc go zasilić). Gdy brak mapowania — pozycje pozostają osobne **(do potwierdzenia szczegółów)**
 - Współdzielenie w rodzinie
 - Offline support + cache
 - Sync po powrocie online
@@ -78,7 +80,7 @@ Proces tworzenia nowej aplikacji na bazie tego core'u:
 - Auth: **Google OAuth + email/hasło + WebAuthn/passkeys + 2FA** (wszystko z boilerplate) **(potwierdzone)**
 - **1 użytkownik = 1 rodzina**, bez przełączania między rodzinami **(potwierdzone)**
 - Opuszczenie / zmiana rodziny — poza zakresem MVP **(potwierdzone)**
-- Tworzenie rodziny + zaproszenia linkiem
+- Tworzenie rodziny + zaproszenia linkiem (liczba członków ograniczona planem — patrz sekcja 12)
 - Wszyscy użytkownicy mają równe uprawnienia
 
 ---
@@ -128,5 +130,20 @@ Proces tworzenia nowej aplikacji na bazie tego core'u:
 ## 11. Notyfikacje i realtime
 - Brak push notifications w MVP
 - Brak realtime (WebSocket/SSE) w MVP
+
+---
+
+## 12. Plany i limity (tiers)
+
+Limit dotyczy liczby członków rodziny: **(potwierdzone)**
+
+| Plan | Limit członków rodziny |
+|---|---|
+| Free | 2 osoby |
+| Basic | 5 osób |
+| Pro | bez limitu |
+
+- Zaproszenia linkiem respektują limit planu.
+- **Płatności / billing** (integracja płatności, obsługa subskrypcji) — czy w MVP, czy tylko egzekwowanie limitów z planami na sztywno, a płatności później **(do potwierdzenia)**
 
 ---
