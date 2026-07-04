@@ -43,7 +43,7 @@ Proces tworzenia nowej aplikacji na bazie tego core'u:
 - Dodawanie składników z przepisu do listy jednym kliknięciem, w tym „dorzuć brakujące składniki" **(potwierdzone)**
 - Sumowanie pozycji: ten sam składnik dodany wielokrotnie sumuje się w jedną pozycję **(potwierdzone)**
   - Sumowanie korzysta z **mapy konwersji jednostek zależnej od składnika** (np. szklanka mąki = N g mąki; szklanka mąki ≠ szklanka cukru) — pozycje o różnych, ale przeliczalnych jednostkach lączą się w jedną **(potwierdzone)**
-  - Wymaga zbioru konwersji per składnik (dataset do zbudowania; AI może pomóc go zasilić). Gdy brak mapowania — pozycje pozostają osobne **(do potwierdzenia szczegółów)**
+  - Wymaga zbioru konwersji per składnik (dataset do zbudowania; AI może pomóc go zasilić). **Gdy brak mapowania — pozycje pozostają osobne** **(potwierdzone)**
 - Współdzielenie w rodzinie
 - Offline support + cache
 - Sync po powrocie online
@@ -145,7 +145,7 @@ Limit dotyczy liczby członków rodziny: **(potwierdzone)**
 | Pro | bez limitu |
 
 - Zaproszenia linkiem respektują limit planu.
-- **Płatności / billing**: moduł pochodzi z gear-stack (boilerplate). Na start **disabled** (feature flag) — włączany później. **(potwierdzone)**
-  - Przy wyłączonym billingu: sposób przydzielania planów (domyślnie Free / ręczne nadawanie) i egzekwowanie limitów — **(do potwierdzenia)**
+- Każda nowa rodzina startuje domyślnie na planie **Free**, z egzekwowanymi limitami **(potwierdzone)**
+- **Płatności / billing**: moduł pochodzi z gear-stack (boilerplate). Na start **disabled** (feature flag) — włączany później. Przy wyłączonym billingu plany można nadawać ręcznie. **(potwierdzone)**
 
 ---
