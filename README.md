@@ -14,6 +14,7 @@ Z gear-stack przenosimy (dokładny zakres do ustalenia w trakcie):
 - Users / auth (email+hasło, WebAuthn/passkeys, JWT)
 - OAuth (Google)
 - 2FA
+- Płatności / subskrypcje (billing) — istnieją w gear-stack; na start **disabled** (feature flag), patrz sekcja 12
 - Integrację z OpenRouter (AI)
 - Konfigurację linterów i narzędzi jakości kodu
 - Frontend Vue 3: layouty, komponenty (shadcn-vue / reka-ui), rejestr i18n, konfiguracja PWA, setup TanStack Query, stores/patterns
@@ -144,6 +145,7 @@ Limit dotyczy liczby członków rodziny: **(potwierdzone)**
 | Pro | bez limitu |
 
 - Zaproszenia linkiem respektują limit planu.
-- **Płatności / billing** (integracja płatności, obsługa subskrypcji) — czy w MVP, czy tylko egzekwowanie limitów z planami na sztywno, a płatności później **(do potwierdzenia)**
+- **Płatności / billing**: moduł pochodzi z gear-stack (boilerplate). Na start **disabled** (feature flag) — włączany później. **(potwierdzone)**
+  - Przy wyłączonym billingu: sposób przydzielania planów (domyślnie Free / ręczne nadawanie) i egzekwowanie limitów — **(do potwierdzenia)**
 
 ---
