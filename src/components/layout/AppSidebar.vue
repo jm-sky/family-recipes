@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Info, LayoutDashboard } from 'lucide-vue-next'
+import { Info, LayoutDashboard, Users } from 'lucide-vue-next'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { RouterLink } from 'vue-router'
@@ -25,6 +25,11 @@ const mainLinks = computed(() => [
     to: '/dashboard',
     label: t('navigation.dashboard', 'Dashboard'),
     icon: LayoutDashboard,
+  },
+  {
+    to: '/family',
+    label: t('family.nav.title', 'Family'),
+    icon: Users,
   },
 ])
 </script>

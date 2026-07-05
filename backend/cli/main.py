@@ -51,12 +51,12 @@ COMMAND_GROUPS = {
             "toggle-owner": "Toggle owner status for a user",
         },
     },
-    "tenants": {
-        "name": "Tenant Management",
+    "family": {
+        "name": "Family Management",
         "commands": {
-            "create": "Create a new tenant",
-            "assign": "Assign user to tenant",
-            "list": "List all tenants",
+            "create": "Create a new family",
+            "set-plan": "Set family plan (free, basic, pro)",
+            "list": "List all families",
         },
     },
     "test": {
@@ -102,10 +102,10 @@ COMMAND_ARGUMENTS = {
             "arg_type": "positional",
         },
     ],
-    "tenants.create": [
+    "family.create": [
         {
             "name": "name",
-            "prompt": "Enter tenant name:",
+            "prompt": "Enter family name:",
             "type": "text",
             "arg_type": "positional",
         },
@@ -117,17 +117,18 @@ COMMAND_ARGUMENTS = {
             "flag": "--owner-email",
         },
     ],
-    "tenants.assign": [
+    "family.set-plan": [
         {
-            "name": "tenant_id",
-            "prompt": "Enter tenant ID:",
+            "name": "family_id",
+            "prompt": "Enter family ID:",
             "type": "text",
             "arg_type": "positional",
         },
         {
-            "name": "email",
-            "prompt": "Enter user email:",
-            "type": "text",
+            "name": "plan",
+            "prompt": "Select plan (use ↑↓ arrow keys, Enter to confirm):",
+            "type": "select",
+            "choices": ["free", "basic", "pro"],
             "arg_type": "positional",
         },
     ],
