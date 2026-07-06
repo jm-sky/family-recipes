@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ArrowLeft, Plus, Trash2 } from 'lucide-vue-next'
+import { ArrowLeft, ChevronDown, Plus, Trash2 } from 'lucide-vue-next'
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { RouterLink, useRoute } from 'vue-router'
@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 import { Progress } from '@/components/ui/progress'
 import Select from '@/components/ui/select/Select.vue'
 import SelectContent from '@/components/ui/select/SelectContent.vue'
@@ -29,11 +30,11 @@ const { categories } = useShoppingLists()
 const { list, isLoading, addItem, quickAdd, isAddingItem, toggleItem, deleteItem } = useShoppingList(listId)
 
 const quickAddText = ref('')
-const showDetailed = ref(false)
+const showCategory = ref(false)
 const detailName = ref('')
-const detailQuantity = ref<string>('')
-const detailUnit = ref<string>('')
-const detailCategory = ref<string>('')
+const detailQuantity = ref('')
+const detailUnit = ref('')
+const detailCategory = ref('')
 
 const NO_UNIT = '__none__'
 const NO_CATEGORY = '__none__'
@@ -43,7 +44,6 @@ const categoryName = (categoryId: string | null): string => {
   return categories.value?.find(c => c.id === categoryId)?.name ?? t('shopping.list.uncategorized')
 }
 
-// Group items by category, preserving category sort order; uncategorized last.
 const groupedItems = computed(() => {
   const items = list.value?.items ?? []
   const groups = new Map<string, ShoppingItem[]>()
@@ -67,14 +67,7 @@ const progress = computed(() => {
   return Math.round(((list.value?.checkedCount ?? 0) / total) * 100)
 })
 
-async function handleQuickAdd() {
-  const text = quickAddText.value.trim()
-  if (!text) return
-  await quickAdd(text)
-  quickAddText.value = ''
-}
-
-async function handleDetailedAdd() {
+async function handleStructuredAdd() {
   const name = detailName.value.trim()
   if (!name) return
   await addItem({
@@ -87,6 +80,13 @@ async function handleDetailedAdd() {
   detailQuantity.value = ''
   detailUnit.value = ''
   detailCategory.value = ''
+}
+
+async function handleQuickAdd() {
+  const text = quickAddText.value.trim()
+  if (!text) return
+  await quickAdd(text)
+  quickAddText.value = ''
 }
 
 function formatQuantity(item: ShoppingItem): string {
@@ -117,64 +117,102 @@ function formatQuantity(item: ShoppingItem): string {
           </div>
         </div>
 
-        <!-- Quick add -->
-        <form class="flex items-center gap-2" @submit.prevent="handleQuickAdd">
-          <Input
-            v-model="quickAddText"
-            :placeholder="t('shopping.list.quickAddPlaceholder')"
-            class="flex-1"
-            :disabled="isAddingItem"
-          />
-          <Button type="submit" :disabled="!quickAddText.trim() || isAddingItem">
-            <Plus :size="16" />
-            {{ t('shopping.list.add') }}
-          </Button>
-        </form>
+        <!-- Structured add (always visible) -->
+        <Card>
+          <CardContent class="space-y-3 p-4">
+            <form class="space-y-3" @submit.prevent="handleStructuredAdd">
+              <div class="grid gap-2 sm:grid-cols-[1fr_5.5rem_7.5rem_auto]">
+                <div class="space-y-1">
+                  <Label for="item-name" class="text-xs text-muted-foreground">{{ t('shopping.list.namePlaceholder') }}</Label>
+                  <Input
+                    id="item-name"
+                    v-model="detailName"
+                    :placeholder="t('shopping.list.nameExample')"
+                    :disabled="isAddingItem"
+                  />
+                </div>
+                <div class="space-y-1">
+                  <Label for="item-qty" class="text-xs text-muted-foreground">{{ t('shopping.list.quantity') }}</Label>
+                  <Input
+                    id="item-qty"
+                    v-model="detailQuantity"
+                    :placeholder="t('shopping.list.quantityExample')"
+                    inputmode="decimal"
+                    :disabled="isAddingItem"
+                  />
+                </div>
+                <div class="space-y-1">
+                  <Label class="text-xs text-muted-foreground">{{ t('shopping.list.unit') }}</Label>
+                  <Select v-model="detailUnit" :disabled="isAddingItem">
+                    <SelectTrigger>
+                      <SelectValue :placeholder="t('shopping.list.noUnit')" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem :value="NO_UNIT">
+                        {{ t('shopping.list.noUnit') }}
+                      </SelectItem>
+                      <SelectItem v-for="unit in UNITS" :key="unit" :value="unit">
+                        {{ unit }}
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div class="flex items-end">
+                  <Button type="submit" class="w-full sm:w-auto" :disabled="!detailName.trim() || isAddingItem">
+                    <Plus :size="16" />
+                    {{ t('shopping.list.add') }}
+                  </Button>
+                </div>
+              </div>
 
-        <div>
-          <button type="button" class="text-xs text-muted-foreground hover:text-foreground" @click="showDetailed = !showDetailed">
-            {{ t('shopping.list.addDetailed') }}
-          </button>
-        </div>
-
-        <!-- Detailed add -->
-        <Card v-if="showDetailed">
-          <CardContent class="p-4">
-            <form class="grid gap-2 sm:grid-cols-[1fr_5rem_8rem_10rem_auto]" @submit.prevent="handleDetailedAdd">
-              <Input v-model="detailName" :placeholder="t('shopping.list.namePlaceholder')" />
-              <Input v-model="detailQuantity" :placeholder="t('shopping.list.quantity')" inputmode="decimal" />
-              <Select v-model="detailUnit">
-                <SelectTrigger>
-                  <SelectValue :placeholder="t('shopping.list.noUnit')" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem :value="NO_UNIT">
-                    {{ t('shopping.list.noUnit') }}
-                  </SelectItem>
-                  <SelectItem v-for="unit in UNITS" :key="unit" :value="unit">
-                    {{ unit }}
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-              <Select v-model="detailCategory">
-                <SelectTrigger>
-                  <SelectValue :placeholder="t('shopping.list.noCategory')" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem :value="NO_CATEGORY">
-                    {{ t('shopping.list.noCategory') }}
-                  </SelectItem>
-                  <SelectItem v-for="category in categories ?? []" :key="category.id" :value="category.id">
-                    {{ category.name }}
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-              <Button type="submit" :disabled="!detailName.trim() || isAddingItem">
-                <Plus :size="16" />
-              </Button>
+              <div>
+                <button
+                  type="button"
+                  class="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
+                  @click="showCategory = !showCategory"
+                >
+                  <ChevronDown :size="14" class="transition-transform" :class="{ 'rotate-180': showCategory }" />
+                  {{ t('shopping.list.addCategory') }}
+                </button>
+                <div v-if="showCategory" class="mt-2 max-w-xs">
+                  <Select v-model="detailCategory" :disabled="isAddingItem">
+                    <SelectTrigger>
+                      <SelectValue :placeholder="t('shopping.list.noCategory')" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem :value="NO_CATEGORY">
+                        {{ t('shopping.list.noCategory') }}
+                      </SelectItem>
+                      <SelectItem v-for="category in categories ?? []" :key="category.id" :value="category.id">
+                        {{ category.name }}
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
             </form>
+
+            <div class="border-t pt-3">
+              <Label for="quick-add" class="mb-1.5 block text-xs text-muted-foreground">{{ t('shopping.list.quickAddLabel') }}</Label>
+              <form class="flex items-center gap-2" @submit.prevent="handleQuickAdd">
+                <Input
+                  id="quick-add"
+                  v-model="quickAddText"
+                  :placeholder="t('shopping.list.quickAddPlaceholder')"
+                  class="flex-1"
+                  :disabled="isAddingItem"
+                />
+                <Button type="submit" variant="secondary" :disabled="!quickAddText.trim() || isAddingItem">
+                  {{ t('shopping.list.quickAdd') }}
+                </Button>
+              </form>
+            </div>
           </CardContent>
         </Card>
+
+        <p class="text-xs text-muted-foreground">
+          {{ t('shopping.list.summationHint') }}
+        </p>
 
         <!-- Items grouped by category -->
         <div v-if="list.items.length > 0" class="space-y-5">

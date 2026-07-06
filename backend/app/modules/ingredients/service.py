@@ -3,7 +3,7 @@
 import logging
 from decimal import Decimal
 
-from app.modules.ingredients.conversion import IngredientMatch, build_match_terms, name_matches
+from app.modules.ingredients.conversion import IngredientMatch, _fold, build_match_terms, name_matches
 from app.modules.ingredients.db_models import IngredientDB, IngredientUnitDB
 from app.modules.ingredients.repository import IngredientRepository
 from app.modules.ingredients.schemas import (
@@ -41,7 +41,7 @@ class IngredientService:
         partial: IngredientDB | None = None
         for ingredient in ingredients:
             terms = build_match_terms(ingredient.name, ingredient.aliases)
-            if name.strip().lower() in {t.lower() for t in terms} and exact is None:
+            if _fold(name) in terms and exact is None:
                 exact = ingredient
             elif name_matches(name, terms) and partial is None:
                 partial = ingredient

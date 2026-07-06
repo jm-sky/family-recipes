@@ -38,6 +38,9 @@ class TestConversion:
         assert FLOUR.to_base(Decimal("1"), "szklanka") == Decimal("130")
         assert FLOUR.to_base(Decimal("2"), "łyżka") == Decimal("20")
 
+    def test_kg_to_grams(self) -> None:
+        assert FLOUR.to_base(Decimal("1"), "kg") == Decimal("1000")
+
     def test_unmapped_unit_returns_none(self) -> None:
         assert FLOUR.to_base(Decimal("1"), "puszka") is None
 
@@ -123,6 +126,21 @@ class TestSummation:
         assert response.quantity == 260.0
         assert response.unit == "g"
         mock_repository.create_item.assert_not_called()
+
+    @pytest.mark.asyncio
+    async def test_kg_plus_grams_merge(self, mock_repository: AsyncMock) -> None:
+        matcher = _FakeMatcher({"mąk": FLOUR})
+        service = ShoppingService(repository=mock_repository, matcher=matcher)
+
+        mock_repository.get_list.return_value = make_list()
+        existing = make_item(quantity=Decimal("500"), unit="g")
+        mock_repository.find_active_items_by_ingredient.return_value = [existing]
+
+        response = await service.add_item("fam1", "list1", "user1", ShoppingItemCreateRequest(name="mąki", quantity=1, unit="kg"))
+
+        assert existing.quantity == Decimal("1500")
+        assert existing.unit == "g"
+        assert response.quantity == 1500.0
 
     @pytest.mark.asyncio
     async def test_cup_of_sugar_stays_separate_from_flour(self, mock_repository: AsyncMock) -> None:

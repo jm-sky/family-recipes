@@ -10,6 +10,10 @@ from decimal import Decimal
 
 _WORD_RE = re.compile(r"[a-ząćęłńóśźż0-9]+", re.IGNORECASE)
 
+# Universal metric conversions when ingredient base_unit is g or ml.
+_WEIGHT_TO_G: dict[str, Decimal] = {"g": Decimal("1"), "dag": Decimal("10"), "kg": Decimal("1000")}
+_VOLUME_TO_ML: dict[str, Decimal] = {"ml": Decimal("1"), "l": Decimal("1000")}
+
 
 def normalize(text: str) -> str:
     """Lowercase, trim and collapse whitespace for matching."""
@@ -39,9 +43,13 @@ class IngredientMatch:
         if resolved_unit == self.base_unit:
             return quantity
         factor = self.unit_to_base.get(resolved_unit)
-        if factor is None:
-            return None
-        return quantity * factor
+        if factor is not None:
+            return quantity * factor
+        if self.base_unit == "g" and resolved_unit in _WEIGHT_TO_G:
+            return quantity * _WEIGHT_TO_G[resolved_unit]
+        if self.base_unit == "ml" and resolved_unit in _VOLUME_TO_ML:
+            return quantity * _VOLUME_TO_ML[resolved_unit]
+        return None
 
 
 def build_match_terms(name: str, aliases: list[str]) -> set[str]:
