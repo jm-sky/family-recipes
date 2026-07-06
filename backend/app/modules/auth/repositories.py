@@ -15,7 +15,7 @@ import logging
 from datetime import UTC, datetime, timedelta
 
 from fastapi import Depends
-from sqlalchemy import delete, func, select
+from sqlalchemy import delete, func, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
@@ -97,7 +97,7 @@ class UserRepository(SearchMixin, UserRepositoryInterface):
         existing_user = result.scalar_one_or_none()
 
         if existing_user:
-            raise UserAlreadyExistsError()
+            raise UserAlreadyExistsError(f"A user with email {normalized_email} already exists")
 
         # Generate new ID using centralized helper
         user_id = generate_id()
@@ -352,11 +352,54 @@ class UserRepository(SearchMixin, UserRepositoryInterface):
             user_db.avatar_url = None
             user_db.openrouter_api_token = None
         else:
-            # Hard delete: physically remove from database
+            await self._cleanup_user_references_for_hard_delete(user_id)
             await self.db.delete(user_db)
 
         await self.db.commit()
         return True
+
+    async def _delete_family_data(self, family_id: str) -> None:
+        """Delete a family and all dependent shopping/membership data."""
+        from app.modules.family.db_models import FamilyDB, FamilyInvitationDB, FamilyMembershipDB
+        from app.modules.shopping.db_models import CategoryDB, ShoppingListDB, ShoppingListItemDB
+
+        list_stmt = select(ShoppingListDB.id).where(ShoppingListDB.family_id == family_id)
+        list_result = await self.db.execute(list_stmt)
+        list_ids = list(list_result.scalars().all())
+
+        if list_ids:
+            await self.db.execute(delete(ShoppingListItemDB).where(ShoppingListItemDB.list_id.in_(list_ids)))
+        await self.db.execute(delete(ShoppingListDB).where(ShoppingListDB.family_id == family_id))
+        await self.db.execute(delete(CategoryDB).where(CategoryDB.family_id == family_id))
+        await self.db.execute(delete(FamilyInvitationDB).where(FamilyInvitationDB.family_id == family_id))
+        await self.db.execute(delete(FamilyMembershipDB).where(FamilyMembershipDB.family_id == family_id))
+        await self.db.execute(delete(FamilyDB).where(FamilyDB.id == family_id))
+
+    async def _cleanup_user_references_for_hard_delete(self, user_id: str) -> None:
+        """Remove FK references that block hard-deleting a user."""
+        from app.modules.family.db_models import FamilyDB, FamilyInvitationDB, FamilyMembershipDB
+        from app.modules.settings.db_models import UserSettingsDB
+        from app.modules.shopping.db_models import ShoppingListDB, ShoppingListItemDB
+
+        await self.db.execute(delete(UserSettingsDB).where(UserSettingsDB.user_id == user_id))
+
+        owned_families_stmt = select(FamilyDB.id).where(FamilyDB.owner_id == user_id)
+        owned_result = await self.db.execute(owned_families_stmt)
+        for family_id in owned_result.scalars().all():
+            await self._delete_family_data(family_id)
+
+        await self.db.execute(delete(FamilyMembershipDB).where(FamilyMembershipDB.user_id == user_id))
+        await self.db.execute(delete(FamilyInvitationDB).where(FamilyInvitationDB.created_by == user_id))
+        await self.db.execute(update(FamilyInvitationDB).where(FamilyInvitationDB.accepted_by == user_id).values(accepted_by=None))
+
+        list_stmt = select(ShoppingListDB.id).where(ShoppingListDB.created_by == user_id)
+        list_result = await self.db.execute(list_stmt)
+        list_ids = list(list_result.scalars().all())
+        if list_ids:
+            await self.db.execute(delete(ShoppingListItemDB).where(ShoppingListItemDB.list_id.in_(list_ids)))
+            await self.db.execute(delete(ShoppingListDB).where(ShoppingListDB.id.in_(list_ids)))
+
+        await self.db.execute(delete(ShoppingListItemDB).where(ShoppingListItemDB.created_by == user_id))
 
     async def increment_token_version(self, user_id: str) -> int:
         """Increment token_version to invalidate all existing tokens for a user."""
@@ -387,7 +430,7 @@ class UserRepository(SearchMixin, UserRepositoryInterface):
         existing_user = result.scalar_one_or_none()
 
         if existing_user:
-            raise UserAlreadyExistsError()
+            raise UserAlreadyExistsError(f"A user with email {normalized_email} already exists")
 
         # Generate new ID
         user_id = generate_id()

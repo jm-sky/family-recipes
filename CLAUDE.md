@@ -59,7 +59,8 @@ docker run --rm --network=host -v "$PWD":/work -w /work -e CI=1 \
 docker compose -f backend/docker-compose.dev.yml up -d    # Start
 docker compose -f backend/docker-compose.dev.yml down     # Stop
 docker exec family-recipes-app python cli.py db init      # Inicjalizacja bazy
-docker exec family-recipes-app python cli.py users create # Tworzenie użytkownika
+docker exec -it family-recipes-app python cli.py users create # Tworzenie użytkownika (interaktywnie)
+docker exec family-recipes-app python cli.py users create --no-input --email user@example.com --name "User" --password "SecurePass123!" # Bez TTY
 docker exec family-recipes-app python -m pytest tests/ -v # Testy backendu
 ```
 
