@@ -326,10 +326,16 @@ def users_list(
     active_only: bool = typer.Option(False, "--active", help="Show only active users"),
     inactive_only: bool = typer.Option(False, "--inactive", help="Show only inactive users"),
     limit: int | None = typer.Option(None, "--limit", "-l", help="Maximum number of users to show"),
-    detailed: bool = typer.Option(
-        False,
-        "--detailed",
+    detailed: bool | None = typer.Option(
+        None,
+        "--detailed/--no-detailed",
         help="Show detailed information (email verified, 2FA status)",
+    ),
+    wide: bool | None = typer.Option(
+        None,
+        "--wide/--no-wide",
+        "-w",
+        help="Show full IDs and emails without truncation",
     ),
     json_output: bool = typer.Option(False, "--json", help="Output as JSON"),
 ) -> None:
@@ -348,9 +354,20 @@ def users_list(
         # Show detailed information
         python -m cli users list --detailed
 
+        # Show full IDs and emails
+        python -m cli users list --wide
+
         # Output as JSON
         python -m cli users list --json
     """
+    if not json_output:
+        if detailed is None:
+            detailed = typer.confirm("Show detailed info (email verified, 2FA)?", default=False)
+        if wide is None:
+            wide = typer.confirm("Show full IDs and emails?", default=False)
+    else:
+        detailed = detailed or False
+        wide = wide or False
     asyncio.run(
         _users_list_async(
             admins_only,
@@ -359,6 +376,7 @@ def users_list(
             inactive_only,
             limit,
             detailed,
+            wide,
             json_output,
         )
     )
@@ -371,6 +389,7 @@ async def _users_list_async(
     inactive_only: bool,
     limit: int | None,
     detailed: bool,
+    wide: bool,
     json_output: bool,
 ) -> None:
     """Async implementation of user listing."""
@@ -436,7 +455,10 @@ async def _users_list_async(
         )
 
         table.add_column("ID", style="dim", no_wrap=True)
-        table.add_column("Email", style="cyan")
+        if wide:
+            table.add_column("Email", style="cyan", overflow="fold")
+        else:
+            table.add_column("Email", style="cyan", overflow="ellipsis", max_width=40)
         table.add_column("Name", style="white")
         table.add_column("Role", justify="center")
         table.add_column("Status", justify="center")
@@ -450,7 +472,7 @@ async def _users_list_async(
             created = user["createdAt"].strftime("%Y-%m-%d %H:%M")
 
             row = [
-                truncate_id(user["id"]),
+                str(user["id"]) if wide else truncate_id(user["id"]),
                 user["email"],
                 user["name"],
                 format_user_role(
