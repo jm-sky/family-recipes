@@ -60,7 +60,7 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
             "style-src 'self' 'unsafe-inline'",
             "img-src 'self' data: https:",
             "font-src 'self' data:",
-            "connect-src 'self' https://*.family-recipes.ovh https://www.google.com https://*.sentry.io",
+            "connect-src 'self' https://*.family-recipes.dev-made.it https://*.family-recipes.ovh https://www.google.com https://*.sentry.io",
             "worker-src 'self' blob:",
             "frame-src 'self' https://www.google.com https://www.gstatic.com",
             "frame-ancestors 'none'",
