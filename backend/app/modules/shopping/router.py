@@ -6,6 +6,8 @@ from fastapi import APIRouter, Depends, HTTPException, status
 
 from app.modules.auth.dependencies import CurrentUser
 from app.modules.family.dependencies import CurrentFamilyId
+from app.modules.ingredients.repository import IngredientRepository, get_ingredient_repository
+from app.modules.ingredients.service import IngredientService
 from app.modules.shopping.exceptions import (
     CategoryNotFoundError,
     InvalidUnitError,
@@ -35,9 +37,12 @@ categories_router = APIRouter(prefix="/categories", tags=["Shopping"])
 shopping_lists_router = APIRouter(prefix="/shopping-lists", tags=["Shopping"])
 
 
-def get_shopping_service(repo: Annotated[ShoppingRepository, Depends(get_shopping_repository)]) -> ShoppingService:
-    """FastAPI dependency to obtain the shopping service."""
-    return ShoppingService(repository=repo)
+def get_shopping_service(
+    repo: Annotated[ShoppingRepository, Depends(get_shopping_repository)],
+    ingredient_repo: Annotated[IngredientRepository, Depends(get_ingredient_repository)],
+) -> ShoppingService:
+    """FastAPI dependency to obtain the shopping service (with ingredient matching)."""
+    return ShoppingService(repository=repo, matcher=IngredientService(repository=ingredient_repo))
 
 
 ShoppingServiceDep = Annotated[ShoppingService, Depends(get_shopping_service)]

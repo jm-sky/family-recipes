@@ -12,6 +12,7 @@ from app.modules.billing.router import router as billing_router
 from app.modules.family.router import invitations_router
 from app.modules.family.router import router as families_router
 from app.modules.feature_limits.router import router as feature_limits_router
+from app.modules.ingredients.router import router as ingredients_router
 from app.modules.logs.router import router as logs_router
 from app.modules.shopping.router import categories_router, shopping_lists_router
 from app.modules.settings.router import router as settings_router
@@ -48,6 +49,7 @@ api_router.include_router(families_router)
 api_router.include_router(invitations_router)
 api_router.include_router(categories_router)
 api_router.include_router(shopping_lists_router)
+api_router.include_router(ingredients_router)
 
 # Register Two-Factor module (optional, added during development)
 try:

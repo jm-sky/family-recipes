@@ -73,7 +73,7 @@ class TestParseQuickAdd:
             ("1.5 kg cukru", "cukru", Decimal("1.5"), "kg"),
             ("3 jabłka", "jabłka", Decimal("3"), None),
             ("masło", "masło", None, None),
-            ("szklanka mąki", "mąki", None, "szklanka"),
+            ("szklanka mąki", "mąki", Decimal("1"), "szklanka"),
             ("  chleb razowy ", "chleb razowy", None, None),
         ],
     )

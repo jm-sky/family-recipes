@@ -135,12 +135,17 @@ class ShoppingRepository:
         result = await self.db.execute(stmt)
         return int(result.scalar_one())
 
-    async def find_active_items(self, list_id: str) -> list[ShoppingListItemDB]:
-        """Unchecked, non-deleted items — candidates for summation/merging."""
-        stmt = select(ShoppingListItemDB).where(
-            ShoppingListItemDB.list_id == list_id,
-            ShoppingListItemDB.deleted_at.is_(None),
-            ShoppingListItemDB.is_checked.is_(False),
+    async def find_active_items_by_ingredient(self, list_id: str, ingredient_id: str) -> list[ShoppingListItemDB]:
+        """Unchecked, non-deleted items of a given ingredient — merge candidates."""
+        stmt = (
+            select(ShoppingListItemDB)
+            .where(
+                ShoppingListItemDB.list_id == list_id,
+                ShoppingListItemDB.deleted_at.is_(None),
+                ShoppingListItemDB.is_checked.is_(False),
+                ShoppingListItemDB.ingredient_id == ingredient_id,
+            )
+            .order_by(ShoppingListItemDB.position, ShoppingListItemDB.created_at)
         )
         result = await self.db.execute(stmt)
         return list(result.scalars().all())

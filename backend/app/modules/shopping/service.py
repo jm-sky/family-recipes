@@ -8,7 +8,9 @@ summation are layered on top in the ingredients phase.
 import logging
 import re
 from decimal import Decimal, InvalidOperation
+from typing import Protocol
 
+from app.modules.ingredients.conversion import IngredientMatch
 from app.modules.shopping.constants import DEFAULT_CATEGORIES, UNITS_SET
 from app.modules.shopping.db_models import CategoryDB, ShoppingListDB, ShoppingListItemDB
 from app.modules.shopping.exceptions import (
@@ -74,6 +76,10 @@ def parse_quick_add(text: str) -> tuple[str, Decimal | None, str | None]:
     elif maybe_unit:
         name_parts.append(maybe_unit)
 
+    # A bare unit with no leading number means one of it ("szklanka mąki" = 1 cup).
+    if unit is not None and quantity is None:
+        quantity = Decimal("1")
+
     if rest:
         name_parts.append(rest)
     name = " ".join(part.strip() for part in name_parts if part.strip()).strip()
@@ -88,11 +94,18 @@ def parse_quick_add(text: str) -> tuple[str, Decimal | None, str | None]:
     return name, quantity, unit
 
 
+class IngredientMatcher(Protocol):
+    """Minimal interface the shopping service needs from the ingredients module."""
+
+    async def match(self, name: str) -> IngredientMatch | None: ...
+
+
 class ShoppingService:
     """Service layer for shopping lists, categories and items."""
 
-    def __init__(self, repository: ShoppingRepository):
+    def __init__(self, repository: ShoppingRepository, matcher: IngredientMatcher | None = None):
         self.repository = repository
+        self.matcher = matcher
 
     # ==================== Categories ====================
 
@@ -169,13 +182,13 @@ class ShoppingService:
         unit = self._validate_unit(payload.unit)
         category_id = await self._validate_category(family_id, payload.categoryId)
         quantity = Decimal(str(payload.quantity)) if payload.quantity is not None else None
-        item = await self._insert_item(shopping_list, name=payload.name.strip(), category_id=category_id, quantity=quantity, unit=unit, user_id=user_id)
+        item = await self._add_or_merge(shopping_list, name=payload.name.strip(), category_id=category_id, quantity=quantity, unit=unit, user_id=user_id)
         return self._to_item_response(item)
 
     async def quick_add(self, family_id: str, list_id: str, user_id: str, payload: QuickAddRequest) -> ShoppingItemResponse:
         shopping_list = await self._require_list(family_id, list_id)
         name, quantity, unit = parse_quick_add(payload.text)
-        item = await self._insert_item(shopping_list, name=name, category_id=None, quantity=quantity, unit=unit, user_id=user_id)
+        item = await self._add_or_merge(shopping_list, name=name, category_id=None, quantity=quantity, unit=unit, user_id=user_id)
         return self._to_item_response(item)
 
     async def update_item(self, family_id: str, list_id: str, item_id: str, payload: ShoppingItemUpdateRequest) -> ShoppingItemResponse:
@@ -216,7 +229,7 @@ class ShoppingService:
 
     # ==================== Helpers ====================
 
-    async def _insert_item(
+    async def _add_or_merge(
         self,
         shopping_list: ShoppingListDB,
         *,
@@ -226,12 +239,26 @@ class ShoppingService:
         unit: str | None,
         user_id: str,
     ) -> ShoppingListItemDB:
+        """Insert an item, merging into an existing one when possible.
+
+        If the name matches a known ingredient and both the new and an existing
+        active item convert to the ingredient's base unit, their quantities are
+        summed and stored in the base unit (README section 2). When a unit has
+        no conversion mapping, the item is kept separate.
+        """
+        match = await self.matcher.match(name) if self.matcher is not None else None
+
+        if match is not None:
+            merged = await self._try_merge(shopping_list, match, quantity, unit)
+            if merged is not None:
+                return merged
+
         position = await self.repository.max_position(shopping_list.id) + 1
         item = await self.repository.create_item(
             list_id=shopping_list.id,
             name=name,
             category_id=category_id,
-            ingredient_id=None,
+            ingredient_id=match.ingredient_id if match is not None else None,
             quantity=quantity,
             unit=unit,
             position=position,
@@ -239,6 +266,28 @@ class ShoppingService:
         )
         await self.repository.touch_list(shopping_list)
         return item
+
+    async def _try_merge(
+        self,
+        shopping_list: ShoppingListDB,
+        match: IngredientMatch,
+        quantity: Decimal | None,
+        unit: str | None,
+    ) -> ShoppingListItemDB | None:
+        added_base = match.to_base(quantity, unit)
+        if added_base is None:
+            return None  # cannot convert the new quantity -> keep separate
+        existing_items = await self.repository.find_active_items_by_ingredient(shopping_list.id, match.ingredient_id)
+        for existing in existing_items:
+            existing_base = match.to_base(existing.quantity, existing.unit)
+            if existing_base is None:
+                continue  # existing has an unmappable unit -> don't merge into it
+            existing.quantity = existing_base + added_base
+            existing.unit = match.base_unit
+            await self.repository.save()
+            await self.repository.touch_list(shopping_list)
+            return existing
+        return None
 
     async def _require_list(self, family_id: str, list_id: str) -> ShoppingListDB:
         shopping_list = await self.repository.get_list(list_id, family_id)

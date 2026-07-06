@@ -42,6 +42,7 @@ MODEL_MODULES = [
     "app.modules.settings.db_models",
     "app.modules.family.db_models",
     "app.modules.shopping.db_models",
+    "app.modules.ingredients.db_models",
     "app.modules.two_factor.db_models",
 ]
 
@@ -548,10 +549,21 @@ def seed_database(
     async def _seed() -> None:
         from app.core.database import get_db
 
-        # Get database session
         async for db in get_db():
+            if seeder == "ingredients":
+                from app.modules.ingredients.repository import IngredientRepository
+                from app.modules.ingredients.seed_data import INGREDIENTS
+
+                repo = IngredientRepository(db)
+                if await repo.count() > 0:
+                    console.print("[yellow]Ingredients already seeded — skipping[/yellow]")
+                    return
+                created = await repo.bulk_create(INGREDIENTS)
+                console.print(f"[green]✓ Seeded {created} ingredients[/green]")
+                return
+
             console.print(f"[red]Unknown seeder: {seeder}[/red]")
-            console.print("[yellow]No seeders registered yet[/yellow]")
+            console.print("[yellow]Available seeders: ingredients[/yellow]")
             raise typer.Exit(1)
 
     console.print(f"[bold green]Starting database seeding for '{seeder}'...[/bold green]")
