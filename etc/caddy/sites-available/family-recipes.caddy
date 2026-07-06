@@ -79,8 +79,11 @@ family-recipes.dev-made.it {
       reverse_proxy localhost:8002
   }
 
-  file_server
-  try_files {path} /index.html
+  # Static SPA (catch-all)
+  handle {
+      file_server
+      try_files {path} /index.html
+  }
 }
 
 # API subdomain - direct proxy to backend
