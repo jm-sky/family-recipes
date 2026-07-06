@@ -1,0 +1,1 @@
+"""Family recipes module."""

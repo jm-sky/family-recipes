@@ -3,6 +3,7 @@ import { aiRoutes } from '@/modules/ai/routes'
 import { AuthRouteNames, AuthRoutePaths, authRoutes } from '@/modules/auth/config/routes'
 import { billingRoutes } from '@/modules/billing/routes'
 import { familyRoutes } from '@/modules/family/routes'
+import { recipeRoutes } from '@/modules/recipes/routes'
 import { settingsRoutes } from '@/modules/settings/routes'
 import { shoppingRoutes } from '@/modules/shopping/routes'
 import { userRoutes } from '@/modules/user/routes'
@@ -27,6 +28,7 @@ export const routes: RouteRecordRaw[] = [
   ...aiRoutes,
   ...billingRoutes,
   ...familyRoutes,
+  ...recipeRoutes,
   ...shoppingRoutes,
   ...settingsRoutes,
   ...userRoutes,

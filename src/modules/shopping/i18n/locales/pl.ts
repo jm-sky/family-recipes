@@ -29,6 +29,8 @@ export const shoppingPl = {
       category: 'Kategoria',
       noUnit: 'Bez jednostki',
       noCategory: 'Bez kategorii',
+      summed: 'Σ',
+      summedHint: 'Pozycja zsumowana z rozpoznanego składnika',
       rename: 'Zmień nazwę',
       save: 'Zapisz',
       cancel: 'Anuluj',

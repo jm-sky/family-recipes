@@ -43,6 +43,7 @@ MODEL_MODULES = [
     "app.modules.family.db_models",
     "app.modules.shopping.db_models",
     "app.modules.ingredients.db_models",
+    "app.modules.recipes.db_models",
     "app.modules.two_factor.db_models",
 ]
 
@@ -54,6 +55,18 @@ def _import_model_modules() -> None:
             import_module(module_path)
         except ModuleNotFoundError:
             console.print(f"[yellow]Skipping missing module:[/yellow] {module_path}")
+
+
+async def _seed_ingredients_after_init() -> None:
+    """Seed canonical ingredients when the dataset table is empty."""
+    from app.core.database import AsyncSessionLocal
+    from app.modules.ingredients.repository import IngredientRepository
+    from app.modules.ingredients.seed import seed_ingredients_if_empty
+
+    async with AsyncSessionLocal() as session:
+        created = await seed_ingredients_if_empty(IngredientRepository(session))
+        if created:
+            console.print(f"[green]✓ Seeded {created} ingredients[/green]")
 
 
 @db_app.command("init")
@@ -73,6 +86,7 @@ def init_database(force: bool = typer.Option(False, "--force", "-f", help="Recre
                 await conn.run_sync(Base.metadata.drop_all)
 
         await init_db()
+        await _seed_ingredients_after_init()
 
         # Mark migration 000 as applied if it wasn't already
         from app.core.migrations import (
@@ -146,6 +160,17 @@ def init_test_database(
 
                 console.print("[bold green]Creating test database schema...[/bold green]")
                 await conn.run_sync(Base.metadata.create_all)
+
+            from sqlalchemy.ext.asyncio import async_sessionmaker
+
+            from app.modules.ingredients.repository import IngredientRepository
+            from app.modules.ingredients.seed import seed_ingredients_if_empty
+
+            session_factory = async_sessionmaker(engine, expire_on_commit=False)
+            async with session_factory() as session:
+                created = await seed_ingredients_if_empty(IngredientRepository(session))
+                if created:
+                    console.print(f"[green]✓ Seeded {created} ingredients in test database[/green]")
 
             console.print("[bold green]✓ Test database initialized successfully[/bold green]")
 
@@ -552,13 +577,12 @@ def seed_database(
         async for db in get_db():
             if seeder == "ingredients":
                 from app.modules.ingredients.repository import IngredientRepository
-                from app.modules.ingredients.seed_data import INGREDIENTS
+                from app.modules.ingredients.seed import seed_ingredients_if_empty
 
-                repo = IngredientRepository(db)
-                if await repo.count() > 0:
+                created = await seed_ingredients_if_empty(IngredientRepository(db))
+                if created == 0:
                     console.print("[yellow]Ingredients already seeded — skipping[/yellow]")
                     return
-                created = await repo.bulk_create(INGREDIENTS)
                 console.print(f"[green]✓ Seeded {created} ingredients[/green]")
                 return
 

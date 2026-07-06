@@ -29,6 +29,8 @@ export const shoppingEn = {
       category: 'Category',
       noUnit: 'No unit',
       noCategory: 'No category',
+      summed: 'Σ',
+      summedHint: 'Item summed from a recognized ingredient',
       rename: 'Rename',
       save: 'Save',
       cancel: 'Cancel',

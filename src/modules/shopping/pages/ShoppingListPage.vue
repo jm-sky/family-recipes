@@ -18,9 +18,10 @@ import { useShoppingList } from '@/modules/shopping/composables/useShoppingList'
 import { useShoppingLists } from '@/modules/shopping/composables/useShoppingLists'
 import { ShoppingRoutePaths } from '@/modules/shopping/routes'
 import { UNITS } from '@/modules/shopping/types'
+import { formatItemQuantity } from '@/modules/shopping/utils/formatQuantity'
 import type { ShoppingItem } from '@/modules/shopping/types'
 
-const { t } = useI18n()
+const { t, locale } = useI18n()
 const route = useRoute()
 
 const listId = computed(() => String(route.params.listId ?? ''))
@@ -89,9 +90,7 @@ async function handleDetailedAdd() {
 }
 
 function formatQuantity(item: ShoppingItem): string {
-  if (item.quantity === null) return ''
-  const qty = Number.isInteger(item.quantity) ? String(item.quantity) : String(item.quantity)
-  return item.unit ? `${qty} ${item.unit}` : qty
+  return formatItemQuantity(item.quantity, item.unit, locale.value)
 }
 </script>
 
@@ -193,8 +192,15 @@ function formatQuantity(item: ShoppingItem): string {
                 <Checkbox :model-value="item.isChecked" @update:model-value="(v) => toggleItem(item.id, !!v)" />
                 <span class="flex-1 text-sm" :class="{ 'line-through': item.isChecked }">
                   {{ item.name }}
+                  <span
+                    v-if="item.ingredientId"
+                    class="ml-1.5 text-[10px] font-medium uppercase tracking-wide text-primary/70"
+                    :title="t('shopping.list.summedHint')"
+                  >
+                    {{ t('shopping.list.summed') }}
+                  </span>
                 </span>
-                <span v-if="formatQuantity(item)" class="text-xs text-muted-foreground">
+                <span v-if="formatQuantity(item)" class="shrink-0 text-xs tabular-nums text-muted-foreground">
                   {{ formatQuantity(item) }}
                 </span>
                 <Button
