@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Info, LayoutDashboard, Users } from 'lucide-vue-next'
+import { Info, LayoutDashboard, ShoppingCart, Users } from 'lucide-vue-next'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { RouterLink } from 'vue-router'
@@ -30,6 +30,11 @@ const mainLinks = computed(() => [
     to: '/family',
     label: t('family.nav.title', 'Family'),
     icon: Users,
+  },
+  {
+    to: '/shopping',
+    label: t('shopping.nav.title', 'Shopping'),
+    icon: ShoppingCart,
   },
 ])
 </script>

@@ -41,6 +41,7 @@ MODEL_MODULES = [
     "app.modules.logs.db_models",
     "app.modules.settings.db_models",
     "app.modules.family.db_models",
+    "app.modules.shopping.db_models",
     "app.modules.two_factor.db_models",
 ]
 

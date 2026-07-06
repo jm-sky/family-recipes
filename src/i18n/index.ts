@@ -12,6 +12,7 @@ import { authEn, authPl } from '@/modules/auth/i18n'
 import { billingTranslations } from '@/modules/billing/i18n'
 import { familyEn, familyPl } from '@/modules/family/i18n'
 import { settingsEn, settingsPl } from '@/modules/settings/i18n'
+import { shoppingEn, shoppingPl } from '@/modules/shopping/i18n'
 import { userEn, userPl } from '@/modules/user/i18n'
 import { createI18nInstance } from '@/shared/i18n'
 // Import registry base messages (validation, errors, common)
@@ -30,6 +31,7 @@ const en = {
   ...authEn,
   ...billingTranslations.en,
   ...familyEn,
+  ...shoppingEn,
   ...settingsEn,
   ...userEn,
 }
@@ -40,6 +42,7 @@ const pl = {
   ...authPl,
   ...billingTranslations.pl,
   ...familyPl,
+  ...shoppingPl,
   ...settingsPl,
   ...userPl,
 }

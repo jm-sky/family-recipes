@@ -4,6 +4,7 @@ import { AuthRouteNames, AuthRoutePaths, authRoutes } from '@/modules/auth/confi
 import { billingRoutes } from '@/modules/billing/routes'
 import { familyRoutes } from '@/modules/family/routes'
 import { settingsRoutes } from '@/modules/settings/routes'
+import { shoppingRoutes } from '@/modules/shopping/routes'
 import { userRoutes } from '@/modules/user/routes'
 import { publicRoutes } from '@/router/publicRoutes'
 import type { RouteRecordRaw } from 'vue-router'
@@ -26,6 +27,7 @@ export const routes: RouteRecordRaw[] = [
   ...aiRoutes,
   ...billingRoutes,
   ...familyRoutes,
+  ...shoppingRoutes,
   ...settingsRoutes,
   ...userRoutes,
   // 404 catch-all route - must be last
