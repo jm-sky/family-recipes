@@ -11,13 +11,13 @@ Konfiguracja Caddy dla dwóch domen na `dev-made.it`, wzorowana na gear-stack (`
 | `family-recipes.dev-made.it` | Frontend SPA (statyczne pliki) | `/api/*` → `localhost:8002` |
 | `api.family-recipes.dev-made.it` | API bezpośrednio | `localhost:8002` |
 
-Plik konfiguracyjny w repozytorium: [`etc/caddy/sites-available/family-recipes.caddy`](../../etc/caddy/sites-available/family-recipes.caddy)
+Plik konfiguracyjny w repozytorium: [`family-recipes.caddy`](family-recipes.caddy)
 
 ## Wdrożenie na serwerze
 
 ```bash
 # 1. Skopiuj konfigurację
-sudo cp etc/caddy/sites-available/family-recipes.caddy /etc/caddy/sites-available/family-recipes.caddy
+sudo cp docs/deployment/family-recipes.caddy /etc/caddy/sites-available/family-recipes.caddy
 sudo chown caddy:caddy /etc/caddy/sites-available/family-recipes.caddy
 sudo chmod 644 /etc/caddy/sites-available/family-recipes.caddy
 
@@ -134,7 +134,7 @@ sudo journalctl -u caddy -f
 
 ## Aktualizacja konfiguracji
 
-1. Edytuj `etc/caddy/sites-available/family-recipes.caddy` w repozytorium
+1. Edytuj `docs/deployment/family-recipes.caddy` w repozytorium
 2. Skopiuj na serwer (patrz sekcja „Wdrożenie na serwerze”)
 3. `sudo caddy validate --config /etc/caddy/Caddyfile`
 4. `sudo systemctl reload caddy`
