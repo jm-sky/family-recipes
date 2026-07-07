@@ -6,59 +6,38 @@ import type { PlanTier } from '../types'
 
 type TranslateFunction = (key: string, ...args: unknown[]) => string
 
-/**
- * Maps feature strings from PLAN_FEATURES to translation keys
- */
 const featureKeyMap: Record<PlanTier, Record<string, string>> = {
   free: {
-    'Basic recipe and shopping list management': 'billing.plans.free.features.basicManagement',
-    'Data export (JSON/Markdown)': 'billing.plans.free.features.dataExport',
-    'BYOK: Bring Your Own API Key (OpenRouter)': 'billing.plans.free.features.byok',
-    '100 MB storage': 'billing.plans.free.features.storage',
-    '2,000 items limit': 'billing.plans.free.features.itemsLimit',
-    '100 containers limit': 'billing.plans.free.features.containersLimit',
+    'Up to 2 family members': 'billing.plans.free.features.memberLimit',
+    'Shared shopping lists': 'billing.plans.free.features.shoppingLists',
+    'Shared family recipes': 'billing.plans.free.features.recipes',
+  },
+  basic: {
+    'Up to 5 family members': 'billing.plans.basic.features.memberLimit',
+    'Everything in Free': 'billing.plans.basic.features.everythingInFree',
+    'Shared shopping lists and recipes': 'billing.plans.basic.features.shoppingAndRecipes',
   },
   pro: {
-    'Everything in Free': 'billing.plans.pro.features.everythingInFree',
-    'AI-powered recipe import': 'billing.plans.pro.features.aiRecommendations',
-    '~$1 worth of AI tokens/month': 'billing.plans.pro.features.aiTokens',
-    'Advanced features': 'billing.plans.pro.features.advancedFeatures',
-    '5 GB storage': 'billing.plans.pro.features.storage',
-    '10,000 items limit': 'billing.plans.pro.features.itemsLimit',
-    '250 containers limit': 'billing.plans.pro.features.containersLimit',
-  },
-  pro_plus: {
-    'Everything in Pro': 'billing.plans.pro_plus.features.everythingInPro',
-    'Priority AI processing': 'billing.plans.pro_plus.features.priorityAi',
-    '~$10 worth of AI tokens/month': 'billing.plans.pro_plus.features.aiTokens',
-    'Premium support': 'billing.plans.pro_plus.features.premiumSupport',
-    '50 GB storage': 'billing.plans.pro_plus.features.storage',
-    '50,000 items limit': 'billing.plans.pro_plus.features.itemsLimit',
-    '500 containers limit': 'billing.plans.pro_plus.features.containersLimit',
+    'Unlimited family members': 'billing.plans.pro.features.memberLimit',
+    'Everything in Basic': 'billing.plans.pro.features.everythingInBasic',
+    'AI-powered recipe import': 'billing.plans.pro.features.aiImport',
   },
 }
 
-/**
- * Get translated features for a plan tier
- */
 export function getTranslatedFeatures(
   planTier: PlanTier,
   features: string[],
   t: TranslateFunction,
 ): string[] {
   const keyMap = featureKeyMap[planTier]
-  
+
   return features.map((feature) => {
     const translationKey = keyMap[feature]
     return translationKey ? t(translationKey) : feature
   })
 }
 
-/**
- * Get translated plan name with suffix
- */
 export function getTranslatedPlanName(planTier: PlanTier, t: TranslateFunction): string {
   const planKey = `billing.plans.${planTier}.fullName` as const
   return t(planKey)
 }
-

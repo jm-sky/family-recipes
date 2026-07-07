@@ -1,11 +1,16 @@
 /**
- * Composable for managing subscription state with TanStack Query
+ * Composable for managing subscription state with TanStack Query.
+ * Current plan display uses the family plan (source of truth for family-recipes).
  */
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/vue-query'
+import { isAxiosError } from 'axios'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useHandleError } from '@/shared/composables/useHandleError'
+import { config } from '@/shared/config/config'
+import { familyQueryKeys } from '@/modules/family/composables/useFamily'
+import { familyService } from '@/modules/family/services/familyService'
 import type {
   BillingInterval,
   CreateCheckoutSessionRequest,
@@ -21,7 +26,22 @@ export function useSubscription() {
   const { t } = useI18n()
   const { handleError } = useHandleError()
 
-  // Get current subscription
+  const stripeEnabled = config.stripe.enabled
+
+  const {
+    data: family,
+    isLoading: isLoadingFamily,
+    error: familyError,
+  } = useQuery({
+    queryKey: familyQueryKeys.me,
+    queryFn: () => familyService.getMyFamily(),
+    retry: (failureCount, error) => {
+      if (isAxiosError(error) && error.response?.status === 404) return false
+      return failureCount < 2
+    },
+    staleTime: 60 * 1000,
+  })
+
   const {
     data: subscription,
     isLoading: isLoadingSubscription,
@@ -30,10 +50,9 @@ export function useSubscription() {
   } = useQuery({
     queryKey: ['subscription'],
     queryFn: () => billingService.getSubscription(),
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: 5 * 60 * 1000,
   })
 
-  // Get subscription limits
   const {
     data: limits,
     isLoading: isLoadingLimits,
@@ -41,15 +60,14 @@ export function useSubscription() {
   } = useQuery({
     queryKey: ['subscription', 'limits'],
     queryFn: () => billingService.getSubscriptionLimits(),
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: 5 * 60 * 1000,
+    enabled: stripeEnabled,
   })
 
-  // Create checkout session mutation
   const createCheckoutMutation = useMutation({
     mutationFn: (request: CreateCheckoutSessionRequest) =>
       billingService.createCheckoutSession(request),
     onSuccess: (data) => {
-      // Redirect to Stripe Checkout
       window.location.href = data.sessionUrl
     },
     onError: (error) => {
@@ -59,14 +77,12 @@ export function useSubscription() {
     },
   })
 
-  // Create portal session mutation
   const createPortalMutation = useMutation({
     mutationFn: () =>
       billingService.createPortalSession({
         returnUrl: window.location.href,
       }),
     onSuccess: (data) => {
-      // Redirect to Stripe Billing Portal
       window.location.href = data.sessionUrl
     },
     onError: (error) => {
@@ -76,7 +92,6 @@ export function useSubscription() {
     },
   })
 
-  // Cancel subscription mutation
   const cancelSubscriptionMutation = useMutation({
     mutationFn: () => billingService.cancelSubscription(),
     onSuccess: () => {
@@ -84,7 +99,6 @@ export function useSubscription() {
     },
   })
 
-  // Update OpenRouter token mutation
   const updateOpenRouterTokenMutation = useMutation({
     mutationFn: (request: UpdateOpenRouterTokenRequest) =>
       billingService.updateOpenRouterToken(request),
@@ -93,34 +107,33 @@ export function useSubscription() {
     },
   })
 
-  // Computed properties
-  const currentPlan = computed(() => subscription.value?.planTier || 'free')
+  // Family plan is the source of truth for what the user sees
+  const currentPlan = computed<PlanTier>(() => family.value?.plan ?? 'free')
   const currentPlanFeatures = computed(() => PLAN_FEATURES[currentPlan.value])
   const isFreeTier = computed(() => currentPlan.value === 'free')
+  const isBasicTier = computed(() => currentPlan.value === 'basic')
   const isProTier = computed(() => currentPlan.value === 'pro')
-  const isProPlusTier = computed(() => currentPlan.value === 'pro_plus')
-  const isPaidTier = computed(() => isProTier.value || isProPlusTier.value)
+  const isPaidTier = computed(() => !isFreeTier.value)
   const isGrandfathered = computed(() => subscription.value?.isGrandfathered || false)
   const isCanceled = computed(() => subscription.value?.status === 'canceled')
   const isPastDue = computed(() => subscription.value?.status === 'past_due')
   const cancelAtPeriodEnd = computed(() => subscription.value?.cancelAtPeriodEnd || false)
 
   const hasActiveSubscription = computed(
-    () => subscription.value?.status === 'active' && !cancelAtPeriodEnd.value,
+    () => stripeEnabled && subscription.value?.status === 'active' && !cancelAtPeriodEnd.value,
   )
 
-  // Helper functions
   const canUpgradeTo = (targetPlan: PlanTier) => {
-    if (isGrandfathered.value) return false
+    if (!stripeEnabled || isGrandfathered.value) return false
     if (currentPlan.value === 'free') return targetPlan !== 'free'
-    if (currentPlan.value === 'pro') return targetPlan === 'pro_plus'
+    if (currentPlan.value === 'basic') return targetPlan === 'pro'
     return false
   }
 
   const canDowngradeTo = (targetPlan: PlanTier) => {
-    if (isGrandfathered.value) return false
-    if (currentPlan.value === 'pro_plus') return targetPlan !== 'pro_plus'
-    if (currentPlan.value === 'pro') return targetPlan === 'free'
+    if (!stripeEnabled || isGrandfathered.value) return false
+    if (currentPlan.value === 'pro') return targetPlan !== 'pro'
+    if (currentPlan.value === 'basic') return targetPlan === 'free'
     return false
   }
 
@@ -150,27 +163,32 @@ export function useSubscription() {
     })
   }
 
+  const hasNoFamily = computed(() => {
+    const error = familyError.value
+    return !!error && isAxiosError(error) && error.response?.status === 404
+  })
+
   return {
-    // Data
+    family,
+    hasNoFamily,
     subscription,
     limits,
     currentPlan,
     currentPlanFeatures,
+    stripeEnabled,
 
-    // Loading states
+    isLoadingFamily,
     isLoadingSubscription,
     isLoadingLimits,
-    isLoading: computed(() => isLoadingSubscription.value || isLoadingLimits.value),
+    isLoading: computed(() => isLoadingFamily.value || isLoadingSubscription.value || isLoadingLimits.value),
 
-    // Errors
     subscriptionError,
     limitsError,
     error: computed(() => subscriptionError.value || limitsError.value),
 
-    // Computed flags
     isFreeTier,
+    isBasicTier,
     isProTier,
-    isProPlusTier,
     isPaidTier,
     isGrandfathered,
     isCanceled,
@@ -178,18 +196,15 @@ export function useSubscription() {
     cancelAtPeriodEnd,
     hasActiveSubscription,
 
-    // Helper functions
     canUpgradeTo,
     canDowngradeTo,
 
-    // Actions
     upgradeToPlan,
     openBillingPortal,
     cancelSubscription,
     updateOpenRouterToken,
     refetchSubscription,
 
-    // Mutation states
     isUpgrading: computed(() => createCheckoutMutation.isPending.value),
     isOpeningPortal: computed(() => createPortalMutation.isPending.value),
     isCanceling: computed(() => cancelSubscriptionMutation.isPending.value),

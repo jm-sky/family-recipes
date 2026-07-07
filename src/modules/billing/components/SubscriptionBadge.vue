@@ -6,12 +6,12 @@ import Badge from '@/components/ui/badge/Badge.vue'
 import { useSubscription } from '../composables/useSubscription'
 
 const { t } = useI18n()
-const { currentPlan, isGrandfathered, isLoadingSubscription } = useSubscription()
+const { currentPlan, isGrandfathered, isLoading } = useSubscription()
 
 const badgeVariant = computed(() => {
   if (isGrandfathered.value) return 'premium'
-  if (currentPlan.value === 'pro_plus') return 'premium'
-  if (currentPlan.value === 'pro') return 'default'
+  if (currentPlan.value === 'pro') return 'premium'
+  if (currentPlan.value === 'basic') return 'default'
   return 'secondary'
 })
 
@@ -25,7 +25,7 @@ const showIcon = computed(() => {
 </script>
 
 <template>
-  <Badge v-if="!isLoadingSubscription" :variant="badgeVariant" class="gap-1.5">
+  <Badge v-if="!isLoading" :variant="badgeVariant" class="gap-1.5">
     <Crown v-if="isGrandfathered" class="size-3.5" />
     <Sparkles v-else-if="showIcon" class="size-3.5" />
     {{ planName }}

@@ -20,6 +20,7 @@ const {
   isPastDue,
   cancelAtPeriodEnd,
   isPaidTier,
+  stripeEnabled,
   openBillingPortal,
   isOpeningPortal,
 } = useSubscription()
@@ -65,14 +66,18 @@ const translatedPlanName = computed(() => getTranslatedPlanName(currentPlan.valu
           {{ statusText }}
         </Badge>
       </div>
-      <CardDescription v-if="currentPlanFeatures">
-        <span v-if="subscription?.billingInterval === 'monthly'">
+      <CardDescription>
+        <span v-if="stripeEnabled && currentPlanFeatures && subscription?.billingInterval === 'monthly'">
           ${{ currentPlanFeatures.price.monthly }}{{ t('billing.perMonth') }}
         </span>
-        <span v-else-if="subscription?.billingInterval === 'annual'">
+        <span v-else-if="stripeEnabled && currentPlanFeatures && subscription?.billingInterval === 'annual'">
           ${{ currentPlanFeatures.price.annualMonthly }}{{ t('billing.perMonth') }} {{ t('billing.billedAnnually') }}
         </span>
-        <span v-else>{{ translatedPlanName }}</span>
+        <span v-else-if="currentPlanFeatures?.memberLimit !== undefined">
+          {{ currentPlanFeatures.memberLimit === null
+            ? t('billing.memberLimitUnlimited')
+            : t('billing.memberLimit', { count: currentPlanFeatures.memberLimit }) }}
+        </span>
       </CardDescription>
     </CardHeader>
 
@@ -89,7 +94,7 @@ const translatedPlanName = computed(() => getTranslatedPlanName(currentPlan.valu
         </ul>
       </div>
 
-      <div v-if="isPaidTier && subscription" class="space-y-2">
+      <div v-if="stripeEnabled && isPaidTier && subscription" class="space-y-2">
         <h3 class="text-sm font-medium">
           {{ t('billing.billingInfo') }}
         </h3>
@@ -116,7 +121,7 @@ const translatedPlanName = computed(() => getTranslatedPlanName(currentPlan.valu
       </div>
     </CardContent>
 
-    <CardFooter v-if="isPaidTier && !isGrandfathered">
+    <CardFooter v-if="stripeEnabled && isPaidTier && !isGrandfathered">
       <Button
         variant="outline"
         class="w-full"

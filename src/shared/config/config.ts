@@ -65,6 +65,9 @@ export const config = {
       enabled: !(import.meta.env.VITE_ENABLE_INLINE_EDITING === 'false'),
     },
   },
+  stripe: {
+    enabled: import.meta.env.VITE_STRIPE_ENABLED === 'true',
+  },
   storage: {
     // Maximum file size for regular users (20 MB)
     maxFileSize: import.meta.env.VITE_MAX_FILE_SIZE ? parseInt(import.meta.env.VITE_MAX_FILE_SIZE) : 20 * 1024 * 1024,

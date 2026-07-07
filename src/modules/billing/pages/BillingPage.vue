@@ -12,11 +12,11 @@ import { BillingRouteIcon } from '../routes'
 import { PLAN_FEATURES } from '../types'
 
 const { t } = useI18n()
-const { currentPlan, upgradeToPlan, isUpgrading } = useSubscription()
+const { currentPlan, upgradeToPlan, isUpgrading, stripeEnabled } = useSubscription()
 
 const billingInterval = ref<BillingInterval>('monthly')
 
-const handleSelectPlan = async (planTier: 'pro' | 'pro_plus') => {
+const handleSelectPlan = async (planTier: 'basic' | 'pro') => {
   await upgradeToPlan(planTier, billingInterval.value)
 }
 </script>
@@ -42,7 +42,7 @@ const handleSelectPlan = async (planTier: 'pro' | 'pro_plus') => {
                 {{ t('billing.upgradePlan') }}
               </h2>
               <p class="mt-2 text-muted-foreground">
-                {{ t('billing.choosePlan') }}
+                {{ stripeEnabled ? t('billing.choosePlan') : t('billing.paymentsComingSoon') }}
               </p>
             </div>
 
@@ -57,39 +57,49 @@ const handleSelectPlan = async (planTier: 'pro' | 'pro_plus') => {
               </TabsList>
 
               <TabsContent value="monthly" class="mt-6">
-                <div class="grid gap-6 md:grid-cols-2">
+                <div class="grid gap-6 md:grid-cols-3">
+                  <PlanCard
+                    :plan="PLAN_FEATURES.free"
+                    billing-interval="monthly"
+                    :is-current-plan="currentPlan === 'free'"
+                  />
+                  <PlanCard
+                    :plan="PLAN_FEATURES.basic"
+                    billing-interval="monthly"
+                    :is-current-plan="currentPlan === 'basic'"
+                    :is-loading="isUpgrading"
+                    :on-select-plan="stripeEnabled ? () => handleSelectPlan('basic') : undefined"
+                  />
                   <PlanCard
                     :plan="PLAN_FEATURES.pro"
                     billing-interval="monthly"
                     :is-current-plan="currentPlan === 'pro'"
                     :is-loading="isUpgrading"
-                    :on-select-plan="() => handleSelectPlan('pro')"
-                  />
-                  <PlanCard
-                    :plan="PLAN_FEATURES.pro_plus"
-                    billing-interval="monthly"
-                    :is-current-plan="currentPlan === 'pro_plus'"
-                    :is-loading="isUpgrading"
-                    :on-select-plan="() => handleSelectPlan('pro_plus')"
+                    :on-select-plan="stripeEnabled ? () => handleSelectPlan('pro') : undefined"
                   />
                 </div>
               </TabsContent>
 
               <TabsContent value="annual" class="mt-6">
-                <div class="grid gap-6 md:grid-cols-2">
+                <div class="grid gap-6 md:grid-cols-3">
+                  <PlanCard
+                    :plan="PLAN_FEATURES.free"
+                    billing-interval="annual"
+                    :is-current-plan="currentPlan === 'free'"
+                  />
+                  <PlanCard
+                    :plan="PLAN_FEATURES.basic"
+                    billing-interval="annual"
+                    :is-current-plan="currentPlan === 'basic'"
+                    :is-loading="isUpgrading"
+                    :on-select-plan="stripeEnabled ? () => handleSelectPlan('basic') : undefined"
+                  />
                   <PlanCard
                     :plan="PLAN_FEATURES.pro"
                     billing-interval="annual"
                     :is-current-plan="currentPlan === 'pro'"
                     :is-loading="isUpgrading"
-                    :on-select-plan="() => handleSelectPlan('pro')"
-                  />
-                  <PlanCard
-                    :plan="PLAN_FEATURES.pro_plus"
-                    billing-interval="annual"
-                    :is-current-plan="currentPlan === 'pro_plus'"
-                    :is-loading="isUpgrading"
-                    :on-select-plan="() => handleSelectPlan('pro_plus')"
+                    :on-select-plan="stripeEnabled ? () => handleSelectPlan('pro') : undefined"
                   />
                 </div>
               </TabsContent>
