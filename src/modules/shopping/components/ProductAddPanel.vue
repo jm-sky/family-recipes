@@ -142,11 +142,11 @@ async function handleSubmit() {
 </script>
 
 <template>
-  <div class="space-y-3">
+  <div :class="isMobile && !isExpanded ? '' : 'space-y-3'">
     <button
       v-if="isMobile && !isExpanded"
       type="button"
-      class="flex w-full items-center gap-2 rounded-md py-1 text-left text-sm font-medium"
+      class="flex w-full items-center gap-2 text-left text-sm leading-tight font-medium"
       @click="toggleExpanded"
     >
       <Plus :size="18" class="shrink-0 text-primary" />

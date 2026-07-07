@@ -43,10 +43,12 @@ const tabs = computed(() => [
 
 <template>
   <nav
-    class="fixed inset-x-0 bottom-0 z-50 border-t bg-background/95 backdrop-blur-sm pb-[env(safe-area-inset-bottom)]"
+    class="fixed inset-x-0 bottom-0 z-50 border-t bg-background/95 backdrop-blur-sm"
     :aria-label="t('navigation.main', 'Navigation')"
   >
-    <div class="grid h-(--bottom-nav-height) grid-cols-4 items-center">
+    <div
+      class="flex items-end justify-around px-0.5 pt-1 pb-[max(0.125rem,env(safe-area-inset-bottom))]"
+    >
       <RouterLink
         v-for="tab in tabs"
         :key="tab.to"
@@ -56,7 +58,7 @@ const tabs = computed(() => [
       >
         <a
           :href="href"
-          class="flex flex-col items-center justify-center gap-0.5 px-1 py-1 text-[0.6875rem] leading-none font-medium transition-colors"
+          class="flex min-w-0 flex-1 flex-col items-center gap-px px-0.5 text-[0.625rem] leading-none font-medium transition-colors"
           :class="cn(
             isMobileBottomNavActive(route.path, tab.matchPrefix)
               ? 'text-primary'
@@ -66,10 +68,10 @@ const tabs = computed(() => [
         >
           <component
             :is="tab.icon"
-            class="size-5"
+            class="size-5 shrink-0"
             :class="isMobileBottomNavActive(route.path, tab.matchPrefix) ? 'text-primary' : 'text-muted-foreground'"
           />
-          <span class="truncate max-w-full">{{ tab.label }}</span>
+          <span class="max-w-full truncate">{{ tab.label }}</span>
         </a>
       </RouterLink>
     </div>

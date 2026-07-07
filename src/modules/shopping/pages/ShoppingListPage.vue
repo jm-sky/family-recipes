@@ -8,7 +8,6 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Progress } from '@/components/ui/progress'
 import AuthenticatedLayout from '@/layouts/AuthenticatedLayout.vue'
-import { cn } from '@/lib/utils'
 import CategoryIcon from '@/modules/shopping/components/CategoryIcon.vue'
 import ProductAddPanel from '@/modules/shopping/components/ProductAddPanel.vue'
 import { useShoppingList } from '@/modules/shopping/composables/useShoppingList'
@@ -96,8 +95,19 @@ function formatQuantity(item: ShoppingItem): string {
           </div>
         </div>
 
-        <Card>
-          <CardContent :class="cn(isMobile ? 'p-3' : 'p-4')">
+        <div
+          v-if="isMobile"
+          class="rounded-lg border bg-card px-3 py-2"
+        >
+          <ProductAddPanel
+            :categories="categories"
+            :disabled="isAddingItem"
+            @add="handleAdd"
+            @quick-add="handleQuickAdd"
+          />
+        </div>
+        <Card v-else>
+          <CardContent class="p-4">
             <ProductAddPanel
               :categories="categories"
               :disabled="isAddingItem"
