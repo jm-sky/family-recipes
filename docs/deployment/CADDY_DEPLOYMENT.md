@@ -63,7 +63,7 @@ pnpm build
 ./scripts/frontend_build_deploy.sh
 ```
 
-Build produkcyjny używa `.env.production` z `VITE_API_BASE_URL=https://api.family-recipes.dev-made.it/api` (wzorzec jak gear-stack — API na osobnej subdomenie, nie przez `/api` na frontendzie).
+Build produkcyjny używa `.env` z `VITE_API_BASE_URL=https://api.family-recipes.dev-made.it/api` (wzorzec jak gear-stack — API na osobnej subdomenie, nie przez `/api` na frontendzie).
 
 Jeśli `frontend_build_deploy.sh` wymaga hasła sudo, alternatywa przez Docker (użytkownik w grupie `docker`):
 
@@ -127,7 +127,7 @@ sudo journalctl -u caddy -f
 
 ## Uwagi
 
-- Frontend używa `VITE_API_BASE_URL=https://api.family-recipes.dev-made.it/api` (plik `.env.production`) — requesty API idą na subdomenę API, tak jak w gear-stack.
+- Frontend używa `VITE_API_BASE_URL=https://api.family-recipes.dev-made.it/api` (plik `.env` na serwerze) — requesty API idą na subdomenę API, tak jak w gear-stack.
 - Blok `handle /api/*` w Caddy jest zapasowy; główna ścieżka to subdomena `api.family-recipes.dev-made.it`.
 - Backend nasłuchuje na `127.0.0.1:8002` (patrz `CLAUDE.md` — porty projektu).
 - Frontend serwowany z `/var/www/family-recipes/` (właściciel: `caddy:deploy`).

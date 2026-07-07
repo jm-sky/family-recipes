@@ -36,6 +36,8 @@ coverage
 # Vitest
 __screenshots__/
 .env
+.env.local
+.env.*.local
 test-results/
 
 # Database backups
@@ -45,3 +47,6 @@ playwright-report/*
 
 # Generated dev emails (file email adapter)
 backend/emails/*.eml
+
+# Local agent instructions (machine-specific, not committed)
+AGENTS.local.md
