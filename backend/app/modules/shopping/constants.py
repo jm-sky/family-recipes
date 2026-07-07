@@ -25,6 +25,34 @@ UNITS: list[str] = [
 
 UNITS_SET: frozenset[str] = frozenset(UNITS)
 
+# Polish (and common) unit aliases mapped to canonical UNITS entries.
+UNIT_ALIASES: dict[str, str] = {
+    "szt.": "szt",
+    "sztuk": "szt",
+    "sztuki": "szt",
+    "gram": "g",
+    "gramów": "g",
+    "gramy": "g",
+    "kilogram": "kg",
+    "kilogramów": "kg",
+    "kilogramy": "kg",
+    "mililitr": "ml",
+    "mililitra": "ml",
+    "mililitry": "ml",
+    "litr": "l",
+    "litra": "l",
+    "litry": "l",
+    "łyżki": "łyżka",
+    "lyzka": "łyżka",
+    "łyżeczki": "łyżeczka",
+    "lyzeczka": "łyżeczka",
+    "szklanki": "szklanka",
+    "tbsp": "łyżka",
+    "tsp": "łyżeczka",
+    "cup": "szklanka",
+    "cups": "szklanka",
+}
+
 # Default categories seeded when a family creates its first shopping list.
 # (name, icon) — icons are lucide keys used by the frontend.
 DEFAULT_CATEGORIES: list[tuple[str, str]] = [

@@ -11,7 +11,7 @@ from decimal import Decimal, InvalidOperation
 from typing import Protocol
 
 from app.modules.ingredients.conversion import IngredientMatch, _fold
-from app.modules.shopping.constants import DEFAULT_CATEGORIES, POPULAR_INGREDIENT_NAMES, UNITS_SET
+from app.modules.shopping.constants import DEFAULT_CATEGORIES, POPULAR_INGREDIENT_NAMES, UNIT_ALIASES, UNITS_SET
 from app.modules.shopping.db_models import CategoryDB, ShoppingListDB, ShoppingListItemDB
 from app.modules.shopping.exceptions import (
     CategoryNotFoundError,
@@ -61,11 +61,18 @@ def _to_decimal(raw: str | None) -> Decimal | None:
         return None
 
 
+def _normalize_unit_token(token: str) -> str:
+    """Map aliases (e.g. ``litr``) to canonical unit codes (``l``)."""
+    lowered = token.strip().lower().replace(",", ".")
+    lowered = UNIT_ALIASES.get(lowered, lowered)
+    return re.sub(r"\.$", "", lowered)
+
+
 def _parse_unit_token(token: str | None) -> tuple[Decimal | None, str | None]:
-    """Parse unit tokens like ``l``, ``1l``, ``500ml``."""
+    """Parse unit tokens like ``l``, ``1l``, ``500ml``, ``litr``."""
     if not token:
         return None, None
-    normalized = token.strip().lower().replace(",", ".")
+    normalized = _normalize_unit_token(token)
     if not normalized:
         return None, None
     if normalized in UNITS_SET:
@@ -73,7 +80,7 @@ def _parse_unit_token(token: str | None) -> tuple[Decimal | None, str | None]:
     glued = re.match(rf"^({_DECIMAL_RE})(.+)$", normalized)
     if glued:
         qty = _to_decimal(glued.group(1))
-        unit_part = glued.group(2).strip()
+        unit_part = _normalize_unit_token(glued.group(2).strip())
         if qty is not None and unit_part in UNITS_SET:
             return qty, unit_part
     return None, None

@@ -1,11 +1,12 @@
 <script setup lang="ts">
-import { ArrowLeft, Minus, Plus, Trash2 } from 'lucide-vue-next'
-import { computed } from 'vue'
+import { ArrowLeft, Check, Minus, Pencil, Plus, Trash2, X } from 'lucide-vue-next'
+import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { RouterLink, useRoute } from 'vue-router'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Checkbox } from '@/components/ui/checkbox'
+import { Input } from '@/components/ui/input'
 import { Progress } from '@/components/ui/progress'
 import AuthenticatedLayout from '@/layouts/AuthenticatedLayout.vue'
 import CategoryIcon from '@/modules/shopping/components/CategoryIcon.vue'
@@ -24,6 +25,33 @@ const isMobile = useIsMobile()
 const listId = computed(() => String(route.params.listId ?? ''))
 const { categories } = useShoppingLists()
 const { list, isLoading, addItem, quickAdd, isAddingItem, toggleItem, updateItem, deleteItem } = useShoppingList(listId)
+
+const editingId = ref<string | null>(null)
+const editingName = ref('')
+
+function startEdit(item: ShoppingItem) {
+  if (item.isChecked) return
+  editingId.value = item.id
+  editingName.value = item.name
+}
+
+function cancelEdit() {
+  editingId.value = null
+  editingName.value = ''
+}
+
+async function saveEdit(item: ShoppingItem) {
+  const name = editingName.value.trim()
+  if (name && name !== item.name) {
+    await updateItem({ itemId: item.id, request: { name } })
+  }
+  cancelEdit()
+}
+
+function onEditKeyup(event: KeyboardEvent, item: ShoppingItem) {
+  if (event.key === 'Enter') void saveEdit(item)
+  if (event.key === 'Escape') cancelEdit()
+}
 
 const categoryName = (categoryId: string | null): string => {
   if (!categoryId) return t('shopping.list.uncategorized')
@@ -158,16 +186,66 @@ async function decrementItem(item: ShoppingItem) {
                 :class="{ 'opacity-60': item.isChecked }"
               >
                 <Checkbox :model-value="item.isChecked" @update:model-value="(v) => toggleItem(item.id, !!v)" />
-                <span class="flex-1 text-sm" :class="{ 'line-through': item.isChecked }">
-                  {{ item.name }}
-                  <span
-                    v-if="item.ingredientId"
-                    class="ml-1.5 text-[10px] font-medium uppercase tracking-wide text-primary/70"
-                    :title="t('shopping.list.summedHint')"
-                  >
-                    {{ t('shopping.list.summed') }}
-                  </span>
-                </span>
+                <div class="flex min-w-0 flex-1 items-center gap-1">
+                  <template v-if="editingId === item.id">
+                    <Input
+                      v-model="editingName"
+                      class="h-8 flex-1 text-sm"
+                      :placeholder="t('shopping.list.namePlaceholder')"
+                      :aria-label="t('shopping.list.rename')"
+                      @keyup="onEditKeyup($event, item)"
+                    />
+                    <Button
+                      type="button"
+                      size="icon"
+                      variant="ghost"
+                      class="size-7 shrink-0"
+                      :aria-label="t('shopping.list.save')"
+                      @click="saveEdit(item)"
+                    >
+                      <Check :size="14" />
+                    </Button>
+                    <Button
+                      type="button"
+                      size="icon"
+                      variant="ghost"
+                      class="size-7 shrink-0"
+                      :aria-label="t('shopping.list.cancel')"
+                      @click="cancelEdit"
+                    >
+                      <X :size="14" />
+                    </Button>
+                  </template>
+                  <template v-else>
+                    <button
+                      type="button"
+                      class="flex min-w-0 flex-1 items-center gap-1 text-left text-sm"
+                      :class="{ 'line-through': item.isChecked, 'cursor-default': item.isChecked }"
+                      :disabled="item.isChecked"
+                      @click="startEdit(item)"
+                    >
+                      <span class="truncate">{{ item.name }}</span>
+                      <span
+                        v-if="item.ingredientId"
+                        class="shrink-0 text-[10px] font-medium uppercase tracking-wide text-primary/70"
+                        :title="t('shopping.list.summedHint')"
+                      >
+                        {{ t('shopping.list.summed') }}
+                      </span>
+                    </button>
+                    <Button
+                      v-if="!item.isChecked"
+                      type="button"
+                      size="icon"
+                      variant="ghost"
+                      class="size-7 shrink-0"
+                      :aria-label="t('shopping.list.rename')"
+                      @click="startEdit(item)"
+                    >
+                      <Pencil :size="14" />
+                    </Button>
+                  </template>
+                </div>
                 <div class="flex shrink-0 items-center gap-1">
                   <Button
                     type="button"

@@ -81,6 +81,8 @@ class TestParseQuickAdd:
             ("6x mleko", "mleko", Decimal("6"), "szt"),
             ("mleko 2l", "mleko", Decimal("2"), "l"),
             ("mleko 2 l", "mleko", Decimal("2"), "l"),
+            ("Mleko 3x litr", "Mleko", Decimal("3"), "l"),
+            ("mleko 2 litry", "mleko", Decimal("2"), "l"),
         ],
     )
     def test_parse(self, text: str, name: str, quantity: Decimal | None, unit: str | None) -> None:

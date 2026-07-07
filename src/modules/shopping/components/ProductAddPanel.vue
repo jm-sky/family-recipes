@@ -70,6 +70,7 @@ const showDetails = ref(false)
 const detailQuantity = ref('')
 const detailUnit = ref('')
 const detailCategory = ref('')
+const categoryManuallySet = ref(false)
 
 const NO_UNIT = '__none__'
 const NO_CATEGORY = '__none__'
@@ -107,6 +108,7 @@ const detectedCategory = computed(() => {
 
 watch(bestSuggestion, (suggestion) => {
   if (!suggestion?.categoryId) return
+  if (categoryManuallySet.value) return
   if (!detailCategory.value || detailCategory.value === NO_CATEGORY) {
     detailCategory.value = suggestion.categoryId
   }
@@ -138,7 +140,13 @@ function resetDetails() {
   detailQuantity.value = ''
   detailUnit.value = ''
   detailCategory.value = ''
+  categoryManuallySet.value = false
   showDetails.value = false
+}
+
+function onCategoryChange(value: unknown) {
+  detailCategory.value = String(value ?? '')
+  categoryManuallySet.value = true
 }
 
 async function handleSuggestionSelect(suggestion: ProductSuggestion) {
@@ -151,13 +159,12 @@ function hasManualDetails(): boolean {
   return Boolean(
     detailQuantity.value
     || (detailUnit.value && detailUnit.value !== NO_UNIT)
-    || (detailCategory.value && detailCategory.value !== NO_CATEGORY),
+    || categoryManuallySet.value,
   )
 }
 
-function shouldQuickAdd(text: string): boolean {
-  if (PARSEABLE_RE.some(re => re.test(text))) return true
-  return !hasManualDetails()
+function isParseable(text: string): boolean {
+  return PARSEABLE_RE.some(re => re.test(text))
 }
 
 function findBestMatch(text: string): ProductSuggestion | undefined {
@@ -172,7 +179,7 @@ async function handleSubmit() {
   const text = searchText.value.trim()
   if (!text) return
 
-  if (shouldQuickAdd(text) && !hasManualDetails()) {
+  if (isParseable(text) || !hasManualDetails()) {
     emit('quickAdd', text)
   }
   else {
@@ -333,7 +340,7 @@ async function handleSubmit() {
           </div>
           <div class="space-y-1">
             <Label class="text-xs text-muted-foreground">{{ t('shopping.list.category') }}</Label>
-            <Select v-model="detailCategory" :disabled="disabled">
+            <Select :model-value="detailCategory" :disabled="disabled" @update:model-value="onCategoryChange">
               <SelectTrigger>
                 <SelectValue :placeholder="t('shopping.list.noCategory')" />
               </SelectTrigger>
