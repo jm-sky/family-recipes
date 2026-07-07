@@ -163,6 +163,24 @@ class TestAcceptInvitation:
     """Tests for invitation acceptance (limits + 1-user-1-family)."""
 
     @pytest.mark.asyncio
+    async def test_get_invitation_preview_success(self, family_service: FamilyService, mock_repository: AsyncMock) -> None:
+        invitation = make_invitation()
+        mock_repository.get_invitation_by_token.return_value = invitation
+        mock_repository.get_family.return_value = make_family()
+
+        response = await family_service.get_invitation_preview(token="token123")
+
+        assert response.familyName == "Kowalscy"
+        assert response.expiresAt == invitation.expires_at
+
+    @pytest.mark.asyncio
+    async def test_get_invitation_preview_unknown_token(self, family_service: FamilyService, mock_repository: AsyncMock) -> None:
+        mock_repository.get_invitation_by_token.return_value = None
+
+        with pytest.raises(InvitationNotFoundError):
+            await family_service.get_invitation_preview(token="missing")
+
+    @pytest.mark.asyncio
     async def test_accept_invitation_success(self, family_service: FamilyService, mock_repository: AsyncMock) -> None:
         invitation = make_invitation()
         mock_repository.get_invitation_by_token.return_value = invitation

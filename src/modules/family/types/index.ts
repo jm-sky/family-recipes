@@ -27,6 +27,11 @@ export interface FamilyInvitation {
   createdAt: string
 }
 
+export interface InvitationPreview {
+  familyName: string
+  expiresAt: string | null
+}
+
 export interface CreateFamilyRequest {
   name: string
 }

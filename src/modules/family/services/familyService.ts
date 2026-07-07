@@ -3,7 +3,7 @@
  */
 
 import { apiClient } from '@/shared/services/apiClient'
-import type { CreateFamilyRequest, Family, FamilyInvitation, FamilyMember } from '../types'
+import type { CreateFamilyRequest, Family, FamilyInvitation, FamilyMember, InvitationPreview } from '../types'
 
 export const familyService = {
   /**
@@ -51,6 +51,14 @@ export const familyService = {
   async getInvitations(): Promise<FamilyInvitation[]> {
     const response = await apiClient.get<{ invitations: FamilyInvitation[] }>('/families/me/invitations')
     return response.data.invitations
+  },
+
+  /**
+   * Get public invitation details (no auth required)
+   */
+  async getInvitationPreview(token: string): Promise<InvitationPreview> {
+    const response = await apiClient.get<InvitationPreview>(`/invitations/${token}`)
+    return response.data
   },
 
   /**

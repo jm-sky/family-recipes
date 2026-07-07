@@ -21,6 +21,7 @@ from app.modules.family.schemas import (
     FamilyCreateRequest,
     FamilyMembersResponse,
     FamilyResponse,
+    InvitationPreviewResponse,
     InvitationResponse,
     InvitationsResponse,
 )
@@ -116,6 +117,24 @@ async def list_invitations(
     """List active invitations for the current user's family."""
     try:
         return await service.list_invitations(current_user.id)
+    except FamilyNotFoundError as e:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+
+
+@invitations_router.get("/{token}", response_model=InvitationPreviewResponse)
+async def get_invitation_preview(
+    token: str,
+    service: FamilyServiceDep,
+) -> InvitationPreviewResponse:
+    """Get public invitation details (no auth required)."""
+    try:
+        return await service.get_invitation_preview(token=token)
+    except InvitationNotFoundError as e:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+    except InvitationExpiredError as e:
+        raise HTTPException(status_code=status.HTTP_410_GONE, detail=str(e))
+    except InvitationAlreadyAcceptedError as e:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(e))
     except FamilyNotFoundError as e:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
 

@@ -18,6 +18,7 @@ powtarzane — patrz gear-stack.
 | DELETE | `/api/families/me/members/{user_id}` | usuń członka (owner) |
 | POST | `/api/families/me/invitations` | utwórz link zaproszenia (403 gdy limit planu osiągnięty) |
 | GET | `/api/families/me/invitations` | aktywne zaproszenia |
+| GET | `/api/invitations/{token}` | podgląd zaproszenia (publiczny, bez auth; nazwa rodziny) |
 | POST | `/api/invitations/{token}/accept` | przyjmij zaproszenie (waliduje limit planu i „1 user = 1 rodzina") |
 
 ## Categories (listy zakupów)

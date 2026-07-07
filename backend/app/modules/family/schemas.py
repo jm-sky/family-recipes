@@ -40,3 +40,8 @@ class InvitationResponse(BaseModel):
 
 class InvitationsResponse(BaseModel):
     invitations: list[InvitationResponse]
+
+
+class InvitationPreviewResponse(BaseModel):
+    familyName: str
+    expiresAt: datetime | None = None

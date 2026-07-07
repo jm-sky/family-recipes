@@ -11,7 +11,7 @@ import secrets
 from datetime import UTC, datetime, timedelta
 
 from app.modules.family.constants import DEFAULT_PLAN, INVITATION_EXPIRES_DAYS, PLAN_MEMBER_LIMITS
-from app.modules.family.db_models import FamilyDB, FamilyMembershipDB
+from app.modules.family.db_models import FamilyDB, FamilyInvitationDB, FamilyMembershipDB
 from app.modules.family.exceptions import (
     AlreadyInFamilyError,
     CannotRemoveOwnerError,
@@ -28,6 +28,7 @@ from app.modules.family.schemas import (
     FamilyMemberResponse,
     FamilyMembersResponse,
     FamilyResponse,
+    InvitationPreviewResponse,
     InvitationResponse,
     InvitationsResponse,
 )
@@ -152,6 +153,24 @@ class FamilyService:
             ]
         )
 
+    async def get_invitation_preview(self, *, token: str) -> InvitationPreviewResponse:
+        """Return public invitation details for the accept/login flow.
+
+        Raises:
+            InvitationNotFoundError: If the token does not exist.
+            InvitationExpiredError: If the invitation has expired.
+            InvitationAlreadyAcceptedError: If the invitation was already used.
+            FamilyNotFoundError: If the invitation's family no longer exists.
+        """
+        invitation = await self._require_valid_invitation(token)
+        family = await self.repository.get_family(invitation.family_id)
+        if not family:
+            raise FamilyNotFoundError("Family for this invitation no longer exists")
+        return InvitationPreviewResponse(
+            familyName=family.name,
+            expiresAt=invitation.expires_at,
+        )
+
     async def accept_invitation(self, *, token: str, user_id: str) -> FamilyResponse:
         """Accept an invitation link and join the family.
 
@@ -165,13 +184,7 @@ class FamilyService:
             MemberLimitReachedError: If the family is at its plan limit.
             FamilyNotFoundError: If the invitation's family no longer exists.
         """
-        invitation = await self.repository.get_invitation_by_token(token)
-        if not invitation:
-            raise InvitationNotFoundError("Invitation not found")
-        if invitation.accepted_at is not None:
-            raise InvitationAlreadyAcceptedError("Invitation has already been used")
-        if invitation.expires_at is not None and invitation.expires_at <= datetime.now(UTC):
-            raise InvitationExpiredError("Invitation has expired")
+        invitation = await self._require_valid_invitation(token)
 
         existing = await self.repository.get_membership_for_user(user_id)
         if existing:
@@ -190,6 +203,16 @@ class FamilyService:
         return self._to_family_response(family, membership, member_count=member_count)
 
     # ==================== Helpers ====================
+
+    async def _require_valid_invitation(self, token: str) -> FamilyInvitationDB:
+        invitation = await self.repository.get_invitation_by_token(token)
+        if not invitation:
+            raise InvitationNotFoundError("Invitation not found")
+        if invitation.accepted_at is not None:
+            raise InvitationAlreadyAcceptedError("Invitation has already been used")
+        if invitation.expires_at is not None and invitation.expires_at <= datetime.now(UTC):
+            raise InvitationExpiredError("Invitation has expired")
+        return invitation
 
     async def _require_family(self, user_id: str) -> tuple[FamilyDB, FamilyMembershipDB]:
         membership = await self.repository.get_membership_for_user(user_id)

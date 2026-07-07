@@ -1,16 +1,18 @@
 <script setup lang="ts">
 import { useMutation, useQueryClient } from '@tanstack/vue-query'
-import { isAxiosError } from 'axios'
 import { CheckCircle2, Users, XCircle } from 'lucide-vue-next'
-import { computed, onMounted, ref } from 'vue'
+import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import AuthenticatedLayout from '@/layouts/AuthenticatedLayout.vue'
+import { AuthRoutePaths } from '@/modules/auth/config/routes'
 import { familyQueryKeys } from '@/modules/family/composables/useFamily'
+import { useInvitationPreview } from '@/modules/family/composables/useInvitationPreview'
 import { FamilyRoutePaths } from '@/modules/family/routes'
 import { familyService } from '@/modules/family/services/familyService'
+import { mapInvitationErrorKey } from '@/modules/family/utils/invitationErrors'
 
 const { t } = useI18n()
 const route = useRoute()
@@ -18,35 +20,22 @@ const router = useRouter()
 const queryClient = useQueryClient()
 
 const token = computed(() => String(route.params.token ?? ''))
-const errorKey = ref<string | null>(null)
+const acceptErrorKey = ref<string | null>(null)
+
+const { preview, errorKey: previewErrorKey, isLoading: isLoadingPreview } = useInvitationPreview(token)
 
 const { mutateAsync, isPending, isSuccess } = useMutation({
   mutationFn: () => familyService.acceptInvitation(token.value),
   onSuccess: async () => {
-    errorKey.value = null
+    acceptErrorKey.value = null
     await queryClient.invalidateQueries({ queryKey: familyQueryKeys.all })
   },
   onError: (error) => {
-    errorKey.value = mapErrorKey(error)
+    acceptErrorKey.value = mapInvitationErrorKey(error)
   },
 })
 
-function mapErrorKey(error: unknown): string {
-  if (isAxiosError(error)) {
-    switch (error.response?.status) {
-      case 403: return 'family.accept.errors.limitReached'
-      case 404: return 'family.accept.errors.notFound'
-      case 409: {
-        const detail = String(error.response?.data?.detail ?? '')
-        return detail.toLowerCase().includes('already a member') || detail.toLowerCase().includes('already in')
-          ? 'family.accept.errors.alreadyInFamily'
-          : 'family.accept.errors.alreadyAccepted'
-      }
-      case 410: return 'family.accept.errors.expired'
-    }
-  }
-  return 'family.accept.errors.generic'
-}
+const displayErrorKey = computed(() => acceptErrorKey.value ?? previewErrorKey.value)
 
 async function accept() {
   try {
@@ -60,9 +49,9 @@ function goToFamily() {
   router.push(FamilyRoutePaths.family)
 }
 
-onMounted(() => {
-  if (token.value) accept()
-})
+function decline() {
+  router.push(AuthRoutePaths.dashboard)
+}
 </script>
 
 <template>
@@ -74,7 +63,15 @@ onMounted(() => {
             <Users :size="20" />
             <CardTitle>{{ t('family.accept.title') }}</CardTitle>
           </div>
-          <CardDescription>{{ t('family.accept.description') }}</CardDescription>
+          <CardDescription v-if="isLoadingPreview">
+            {{ t('family.invitations.banner.loading') }}
+          </CardDescription>
+          <CardDescription v-else-if="preview">
+            {{ t('family.accept.descriptionWithName', { name: preview.familyName }) }}
+          </CardDescription>
+          <CardDescription v-else>
+            {{ t('family.accept.description') }}
+          </CardDescription>
         </CardHeader>
         <CardContent class="space-y-4">
           <!-- In progress -->
@@ -94,23 +91,28 @@ onMounted(() => {
           </div>
 
           <!-- Error -->
-          <div v-else-if="errorKey" class="space-y-4">
+          <div v-else-if="displayErrorKey" class="space-y-4">
             <div class="flex items-center gap-2 text-destructive">
               <XCircle :size="18" />
               <span class="text-sm font-medium">{{ t('family.accept.errorTitle') }}</span>
             </div>
             <p class="text-sm text-muted-foreground">
-              {{ t(errorKey) }}
+              {{ t(displayErrorKey) }}
             </p>
-            <Button variant="outline" @click="goToFamily">
-              {{ t('family.accept.goToFamily') }}
+            <Button variant="outline" @click="decline">
+              {{ t('family.accept.decline') }}
             </Button>
           </div>
 
-          <!-- Fallback (no token / manual) -->
-          <Button v-else :disabled="isPending" @click="accept">
-            {{ t('family.accept.accept') }}
-          </Button>
+          <!-- Confirmation -->
+          <div v-else-if="preview" class="flex flex-col gap-2 sm:flex-row">
+            <Button :disabled="isPending" @click="accept">
+              {{ t('family.accept.accept') }}
+            </Button>
+            <Button variant="outline" :disabled="isPending" @click="decline">
+              {{ t('family.accept.decline') }}
+            </Button>
+          </div>
         </CardContent>
       </Card>
     </div>
