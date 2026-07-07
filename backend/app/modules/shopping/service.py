@@ -41,35 +41,135 @@ from app.modules.shopping.schemas import (
 
 logger = logging.getLogger(__name__)
 
-_QUICK_ADD_RE = re.compile(r"^\s*(\d+(?:[.,]\d+)?)?\s*([^\d\s]+)?\s*(.*)$")
+_DECIMAL_RE = r"\d+(?:[.,]\d+)?"
+_QUICK_ADD_RE = re.compile(rf"^\s*({_DECIMAL_RE})?\s*([^\d\s]+)?\s*(.*)$")
+_TRAILING_PACK_RE = re.compile(
+    rf"^(.+?)\s+({_DECIMAL_RE})\s*[x×]\s*(?:({_DECIMAL_RE})\s*)?([^\d\s]+)?\s*$",
+    re.IGNORECASE,
+)
+_LEADING_PACK_RE = re.compile(rf"^\s*({_DECIMAL_RE})\s*[x×]\s*(.+)$", re.IGNORECASE)
+_TRAILING_QTY_UNIT_RE = re.compile(rf"^(.+?)\s+({_DECIMAL_RE})\s+([^\d\s]+)\s*$", re.IGNORECASE)
+_TRAILING_GLUED_UNIT_RE = re.compile(rf"^(.+?)\s+({_DECIMAL_RE})([a-ząćęłńóśźż]+)$", re.IGNORECASE)
+
+
+def _to_decimal(raw: str | None) -> Decimal | None:
+    if not raw:
+        return None
+    try:
+        return Decimal(raw.replace(",", "."))
+    except InvalidOperation:
+        return None
+
+
+def _parse_unit_token(token: str | None) -> tuple[Decimal | None, str | None]:
+    """Parse unit tokens like ``l``, ``1l``, ``500ml``."""
+    if not token:
+        return None, None
+    normalized = token.strip().lower().replace(",", ".")
+    if not normalized:
+        return None, None
+    if normalized in UNITS_SET:
+        return Decimal("1"), normalized
+    glued = re.match(rf"^({_DECIMAL_RE})(.+)$", normalized)
+    if glued:
+        qty = _to_decimal(glued.group(1))
+        unit_part = glued.group(2).strip()
+        if qty is not None and unit_part in UNITS_SET:
+            return qty, unit_part
+    return None, None
+
+
+def _parse_trailing_pack(text: str) -> tuple[str, Decimal | None, str | None] | None:
+    """Parse ``mleko 6x 1l`` (count × package size) into total quantity."""
+    match = _TRAILING_PACK_RE.match(text)
+    if not match:
+        return None
+
+    name = match.group(1).strip()
+    count = _to_decimal(match.group(2))
+    if count is None:
+        return None
+
+    size_raw, unit_raw = match.group(3), match.group(4)
+    if size_raw and unit_raw:
+        size = _to_decimal(size_raw)
+        _, unit = _parse_unit_token(unit_raw)
+        if size is not None and unit is not None:
+            return name, count * size, unit
+    elif unit_raw and not size_raw:
+        pack_size, unit = _parse_unit_token(unit_raw)
+        if unit is not None:
+            return name, count * (pack_size or Decimal("1")), unit
+    elif not size_raw and not unit_raw:
+        return name, count, "szt"
+
+    return None
+
+
+def _parse_leading_pack(text: str) -> tuple[str, Decimal | None, str | None] | None:
+    """Parse ``6x mleko`` into count + product name."""
+    match = _LEADING_PACK_RE.match(text)
+    if not match:
+        return None
+    count = _to_decimal(match.group(1))
+    name = match.group(2).strip()
+    if count is None or not name:
+        return None
+    return name, count, "szt"
+
+
+def _parse_trailing_qty_unit(text: str) -> tuple[str, Decimal | None, str | None] | None:
+    """Parse ``mleko 2 l`` or ``mleko 2l``."""
+    glued = _TRAILING_GLUED_UNIT_RE.match(text)
+    if glued:
+        name = glued.group(1).strip()
+        qty, unit = _parse_unit_token(f"{glued.group(2)}{glued.group(3)}")
+        if qty is not None and unit is not None:
+            return name, qty, unit
+
+    spaced = _TRAILING_QTY_UNIT_RE.match(text)
+    if spaced:
+        name = spaced.group(1).strip()
+        qty = _to_decimal(spaced.group(2))
+        _, unit = _parse_unit_token(spaced.group(3))
+        if qty is not None and unit is not None:
+            return name, qty, unit
+
+    return None
 
 
 def parse_quick_add(text: str) -> tuple[str, Decimal | None, str | None]:
     """Parse a free-text quick-add entry into (name, quantity, unit).
 
     Examples:
-        "2 kg mąki"    -> ("mąki", Decimal("2"), "kg")
-        "0,5 l mleka"  -> ("mleka", Decimal("0.5"), "l")
-        "3 jabłka"     -> ("jabłka", Decimal("3"), None)
-        "masło"        -> ("masło", None, None)
+        "2 kg mąki"     -> ("mąki", Decimal("2"), "kg")
+        "0,5 l mleka"   -> ("mleka", Decimal("0.5"), "l")
+        "Mleko 6x 1l"   -> ("Mleko", Decimal("6"), "l")
+        "6x mleko"      -> ("mleko", Decimal("6"), "szt")
+        "mleko 2l"      -> ("mleko", Decimal("2"), "l")
+        "3 jabłka"      -> ("jabłka", Decimal("3"), None)
+        "masło"         -> ("masło", None, None)
 
-    A leading number is read as the quantity. The token right after it is
-    treated as a unit only when it belongs to the predefined unit list;
-    otherwise it is part of the name. Unknown input degrades to name-only.
+    Supports leading quantity (``2 kg mąki``), trailing pack notation
+    (``mleko 6x 1l``), leading pack count (``6x mleko``) and trailing
+    glued units (``mleko 2l``). Unknown input degrades to name-only.
     """
     stripped = text.strip()
+    if not stripped:
+        return "", None, None
+
+    for parser in (_parse_trailing_pack, _parse_leading_pack, _parse_trailing_qty_unit):
+        parsed = parser(stripped)
+        if parsed is not None:
+            return parsed
+
     match = _QUICK_ADD_RE.match(stripped)
     if not match:
         return stripped, None, None
 
     raw_qty, maybe_unit, rest = match.group(1), match.group(2), match.group(3)
 
-    quantity: Decimal | None = None
-    if raw_qty:
-        try:
-            quantity = Decimal(raw_qty.replace(",", "."))
-        except InvalidOperation:
-            quantity = None
+    quantity = _to_decimal(raw_qty)
 
     unit: str | None = None
     name_parts: list[str] = []

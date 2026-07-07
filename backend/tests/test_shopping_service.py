@@ -75,6 +75,12 @@ class TestParseQuickAdd:
             ("masło", "masło", None, None),
             ("szklanka mąki", "mąki", Decimal("1"), "szklanka"),
             ("  chleb razowy ", "chleb razowy", None, None),
+            ("Mleko 6x 1l", "Mleko", Decimal("6"), "l"),
+            ("mleko 6 x 1 l", "mleko", Decimal("6"), "l"),
+            ("mleko 6x", "mleko", Decimal("6"), "szt"),
+            ("6x mleko", "mleko", Decimal("6"), "szt"),
+            ("mleko 2l", "mleko", Decimal("2"), "l"),
+            ("mleko 2 l", "mleko", Decimal("2"), "l"),
         ],
     )
     def test_parse(self, text: str, name: str, quantity: Decimal | None, unit: str | None) -> None:

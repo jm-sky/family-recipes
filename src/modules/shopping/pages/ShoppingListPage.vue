@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ArrowLeft, Trash2 } from 'lucide-vue-next'
+import { ArrowLeft, Minus, Plus, Trash2 } from 'lucide-vue-next'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { RouterLink, useRoute } from 'vue-router'
@@ -23,7 +23,7 @@ const isMobile = useIsMobile()
 
 const listId = computed(() => String(route.params.listId ?? ''))
 const { categories } = useShoppingLists()
-const { list, isLoading, addItem, quickAdd, isAddingItem, toggleItem, deleteItem } = useShoppingList(listId)
+const { list, isLoading, addItem, quickAdd, isAddingItem, toggleItem, updateItem, deleteItem } = useShoppingList(listId)
 
 const categoryName = (categoryId: string | null): string => {
   if (!categoryId) return t('shopping.list.uncategorized')
@@ -69,6 +69,29 @@ async function handleQuickAdd(text: string) {
 
 function formatQuantity(item: ShoppingItem): string {
   return formatItemQuantity(item.quantity, item.unit, locale.value)
+}
+
+async function incrementItem(item: ShoppingItem) {
+  const next = (item.quantity ?? 0) + 1
+  await updateItem({
+    itemId: item.id,
+    request: {
+      quantity: next,
+      unit: item.unit ?? 'szt',
+    },
+  })
+}
+
+async function decrementItem(item: ShoppingItem) {
+  const current = item.quantity ?? 1
+  if (current <= 1) {
+    await deleteItem(item.id)
+    return
+  }
+  await updateItem({
+    itemId: item.id,
+    request: { quantity: current - 1 },
+  })
 }
 </script>
 
@@ -145,9 +168,33 @@ function formatQuantity(item: ShoppingItem): string {
                     {{ t('shopping.list.summed') }}
                   </span>
                 </span>
-                <span v-if="formatQuantity(item)" class="shrink-0 text-xs tabular-nums text-muted-foreground">
-                  {{ formatQuantity(item) }}
-                </span>
+                <div class="flex shrink-0 items-center gap-1">
+                  <Button
+                    type="button"
+                    size="icon"
+                    variant="outline"
+                    class="size-7"
+                    :aria-label="t('shopping.list.decrementQuantity')"
+                    :disabled="item.isChecked"
+                    @click="decrementItem(item)"
+                  >
+                    <Minus :size="14" />
+                  </Button>
+                  <span class="min-w-[3ch] text-center text-xs tabular-nums text-muted-foreground">
+                    {{ formatQuantity(item) || '—' }}
+                  </span>
+                  <Button
+                    type="button"
+                    size="icon"
+                    variant="outline"
+                    class="size-7"
+                    :aria-label="t('shopping.list.incrementQuantity')"
+                    :disabled="item.isChecked"
+                    @click="incrementItem(item)"
+                  >
+                    <Plus :size="14" />
+                  </Button>
+                </div>
                 <Button
                   size="icon"
                   variant="ghost"

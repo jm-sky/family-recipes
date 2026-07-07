@@ -76,7 +76,11 @@ const NO_CATEGORY = '__none__'
 
 const { data: suggestionsData, isFetching } = useProductSuggestions(searchText)
 
-const QUICK_ADD_RE = /^\s*\d+(?:[.,]\d+)?/
+const PARSEABLE_RE = [
+  /^\s*\d/,
+  /\d\s*[x×]/i,
+  /[x×]\s*\d/i,
+]
 
 const chipSuggestions = computed(() => {
   if (searchText.value.trim()) return []
@@ -87,6 +91,25 @@ const searchResults = computed(() => {
   const query = searchText.value.trim()
   if (!query) return []
   return suggestionsData.value ?? []
+})
+
+const bestSuggestion = computed(() => {
+  const results = searchResults.value
+  if (!results.length) return null
+  return results.find(s => s.source === 'ingredient') ?? results[0]
+})
+
+const detectedCategory = computed(() => {
+  const suggestion = bestSuggestion.value
+  if (!suggestion?.categoryId) return null
+  return props.categories?.find(c => c.id === suggestion.categoryId) ?? null
+})
+
+watch(bestSuggestion, (suggestion) => {
+  if (!suggestion?.categoryId) return
+  if (!detailCategory.value || detailCategory.value === NO_CATEGORY) {
+    detailCategory.value = suggestion.categoryId
+  }
 })
 
 const recentSuggestions = computed(() => chipSuggestions.value.filter(s => s.source === 'recent'))
@@ -124,15 +147,36 @@ async function handleSuggestionSelect(suggestion: ProductSuggestion) {
   resetDetails()
 }
 
+function hasManualDetails(): boolean {
+  return Boolean(
+    detailQuantity.value
+    || (detailUnit.value && detailUnit.value !== NO_UNIT)
+    || (detailCategory.value && detailCategory.value !== NO_CATEGORY),
+  )
+}
+
+function shouldQuickAdd(text: string): boolean {
+  if (PARSEABLE_RE.some(re => re.test(text))) return true
+  return !hasManualDetails()
+}
+
+function findBestMatch(text: string): ProductSuggestion | undefined {
+  const lower = text.toLowerCase()
+  const results = searchResults.value
+  const exact = results.find(s => s.name.toLowerCase() === lower)
+  if (exact) return exact
+  return results.find(s => lower.includes(s.name.toLowerCase()) || s.name.toLowerCase().includes(lower))
+}
+
 async function handleSubmit() {
   const text = searchText.value.trim()
   if (!text) return
 
-  if (QUICK_ADD_RE.test(text)) {
+  if (shouldQuickAdd(text) && !hasManualDetails()) {
     emit('quickAdd', text)
   }
   else {
-    const matched = searchResults.value.find(s => s.name.toLowerCase() === text.toLowerCase())
+    const matched = findBestMatch(text)
     emit('add', buildAddRequest(matched?.name ?? text, matched))
   }
 
@@ -181,6 +225,9 @@ async function handleSubmit() {
             autocomplete="off"
           />
         </div>
+        <p v-if="detectedCategory" class="text-xs text-muted-foreground">
+          {{ t('shopping.list.detectedCategory', { category: detectedCategory.name }) }}
+        </p>
       </div>
 
       <div v-if="searchResults.length > 0" class="rounded-md border bg-popover p-1 shadow-sm">
