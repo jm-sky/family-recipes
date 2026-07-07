@@ -165,10 +165,10 @@ Zgodnie z [README.md](../../README.md):
 
 ### Faza 0 — Fundament shell (2–3 dni)
 
-- [ ] `MobileShell`, `TopAppBar`, `BottomNav`
-- [ ] `AuthenticatedLayout` — rozgałęzienie mobile/desktop
-- [ ] Safe area + ukrycie footera na mobile
-- [ ] `ConfirmSheet` + podmiana `window.confirm` w module shopping
+- [x] `MobileShell`, `TopAppBar`, `BottomNav`
+- [x] `AuthenticatedLayout` — rozgałęzienie mobile/desktop
+- [x] Safe area + ukrycie footera na mobile
+- [x] `ConfirmSheet` + podmiana `window.confirm` w module shopping
 
 **Kryterium akceptacji:** nawigacja między 4 modułami jednym kciukiem, bez otwierania sidebara.
 

@@ -10,9 +10,11 @@ import AuthenticatedLayout from '@/layouts/AuthenticatedLayout.vue'
 import CategoryManager from '@/modules/shopping/components/CategoryManager.vue'
 import { useShoppingLists } from '@/modules/shopping/composables/useShoppingLists'
 import { ShoppingRoutePaths } from '@/modules/shopping/routes'
+import { useConfirmSheet } from '@/shared/composables/useConfirmSheet'
 
 const { t } = useI18n()
 const { lists, isLoadingLists, createList, isCreatingList, deleteList } = useShoppingLists()
+const { confirm } = useConfirmSheet()
 
 const newListName = ref('')
 const showCategories = ref(false)
@@ -25,7 +27,12 @@ async function handleCreate() {
 }
 
 async function handleDelete(listId: string) {
-  if (window.confirm(t('shopping.lists.deleteConfirm'))) {
+  const confirmed = await confirm({
+    title: t('shopping.lists.deleteConfirm'),
+    destructive: true,
+    confirmLabel: t('common.delete'),
+  })
+  if (confirmed) {
     await deleteList(listId)
   }
 }

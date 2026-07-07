@@ -45,6 +45,9 @@
   --color-sidebar-ring: var(--sidebar-ring);
 
   --header-height: 3.5rem;
+  --app-bar-height: 3.5rem;
+  --bottom-nav-height: 3.5rem;
+  --mobile-touch-min: 2.75rem;
 }
 
 :root {
@@ -122,6 +125,10 @@
 }
 
 @layer base {
+  html {
+    -webkit-tap-highlight-color: transparent;
+  }
+
   * {
     @apply border-border outline-ring/50;
   }
