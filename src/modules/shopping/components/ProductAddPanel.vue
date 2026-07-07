@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ChevronDown, Plus, Search } from 'lucide-vue-next'
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -15,6 +15,8 @@ import CategoryIcon from '@/modules/shopping/components/CategoryIcon.vue'
 import { useProductSuggestions } from '@/modules/shopping/composables/useProductSuggestions'
 import { type Category, type CreateItemRequest, type ProductSuggestion, UNITS } from '@/modules/shopping/types'
 import { getCategoryColors } from '@/modules/shopping/utils/categoryColors'
+import { useIsMobile } from '@/shared/composables/useIsMobile'
+import { SHOPPING_ADD_PANEL_EXPANDED_KEY } from '@/shared/config/config'
 
 const props = defineProps<{
   categories: Category[] | undefined
@@ -27,6 +29,41 @@ const emit = defineEmits<{
 }>()
 
 const { t } = useI18n()
+const isMobile = useIsMobile()
+
+function readExpandedFromStorage(): boolean {
+  try {
+    return localStorage.getItem(SHOPPING_ADD_PANEL_EXPANDED_KEY) === 'true'
+  }
+  catch {
+    return false
+  }
+}
+
+function saveExpandedToStorage(expanded: boolean) {
+  try {
+    localStorage.setItem(SHOPPING_ADD_PANEL_EXPANDED_KEY, String(expanded))
+  }
+  catch {
+    // ignore quota / private mode
+  }
+}
+
+const isExpanded = ref(!isMobile.value)
+
+watch(isMobile, (mobile) => {
+  isExpanded.value = mobile ? readExpandedFromStorage() : true
+}, { immediate: true })
+
+watch(isExpanded, (expanded) => {
+  if (isMobile.value) {
+    saveExpandedToStorage(expanded)
+  }
+})
+
+function toggleExpanded() {
+  isExpanded.value = !isExpanded.value
+}
 
 const searchText = ref('')
 const showDetails = ref(false)
@@ -106,9 +143,31 @@ async function handleSubmit() {
 
 <template>
   <div class="space-y-3">
-    <form class="space-y-3" @submit.prevent="handleSubmit">
+    <button
+      v-if="isMobile && !isExpanded"
+      type="button"
+      class="flex w-full items-center gap-2 rounded-md py-1 text-left text-sm font-medium"
+      @click="toggleExpanded"
+    >
+      <Plus :size="18" class="shrink-0 text-primary" />
+      <span class="flex-1">{{ t('shopping.list.addProduct') }}</span>
+      <ChevronDown :size="16" class="shrink-0 text-muted-foreground" />
+    </button>
+
+    <form v-else class="space-y-3" @submit.prevent="handleSubmit">
+      <button
+        v-if="isMobile"
+        type="button"
+        class="flex w-full items-center gap-2 text-left text-sm font-medium"
+        @click="toggleExpanded"
+      >
+        <Plus :size="18" class="shrink-0 text-primary" />
+        <span class="flex-1">{{ t('shopping.list.addProduct') }}</span>
+        <ChevronDown :size="16" class="shrink-0 text-muted-foreground transition-transform rotate-180" />
+      </button>
+
       <div class="space-y-1">
-        <Label for="product-search" class="text-xs text-muted-foreground">
+        <Label v-if="!isMobile" for="product-search" class="text-xs text-muted-foreground">
           {{ t('shopping.list.addProduct') }}
         </Label>
         <div class="relative">

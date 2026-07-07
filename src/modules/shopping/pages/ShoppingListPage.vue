@@ -8,16 +8,19 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Progress } from '@/components/ui/progress'
 import AuthenticatedLayout from '@/layouts/AuthenticatedLayout.vue'
+import { cn } from '@/lib/utils'
 import CategoryIcon from '@/modules/shopping/components/CategoryIcon.vue'
 import ProductAddPanel from '@/modules/shopping/components/ProductAddPanel.vue'
 import { useShoppingList } from '@/modules/shopping/composables/useShoppingList'
 import { useShoppingLists } from '@/modules/shopping/composables/useShoppingLists'
 import { ShoppingRoutePaths } from '@/modules/shopping/routes'
 import { formatItemQuantity } from '@/modules/shopping/utils/formatQuantity'
+import { useIsMobile } from '@/shared/composables/useIsMobile'
 import type { CreateItemRequest, ShoppingItem } from '@/modules/shopping/types'
 
 const { t, locale } = useI18n()
 const route = useRoute()
+const isMobile = useIsMobile()
 
 const listId = computed(() => String(route.params.listId ?? ''))
 const { categories } = useShoppingLists()
@@ -94,7 +97,7 @@ function formatQuantity(item: ShoppingItem): string {
         </div>
 
         <Card>
-          <CardContent class="p-4">
+          <CardContent :class="cn(isMobile ? 'p-3' : 'p-4')">
             <ProductAddPanel
               :categories="categories"
               :disabled="isAddingItem"

@@ -95,3 +95,4 @@ export const LOCALE_STORAGE_KEY = `${config.app.id}:locale`
 export const SETTINGS_STORAGE_KEY = `${config.app.id}:settings`
 export const CORE_SETTINGS_STORAGE_KEY = `${config.app.id}:core-settings`
 export const USER_STORAGE_KEY = `${config.app.id}:user`
+export const SHOPPING_ADD_PANEL_EXPANDED_KEY = `${config.app.id}:shopping:add-panel-expanded`

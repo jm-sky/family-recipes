@@ -46,7 +46,7 @@ const tabs = computed(() => [
     class="fixed inset-x-0 bottom-0 z-50 border-t bg-background/95 backdrop-blur-sm pb-[env(safe-area-inset-bottom)]"
     :aria-label="t('navigation.main', 'Navigation')"
   >
-    <div class="grid h-(--bottom-nav-height) grid-cols-4">
+    <div class="grid h-(--bottom-nav-height) grid-cols-4 items-center">
       <RouterLink
         v-for="tab in tabs"
         :key="tab.to"
@@ -56,7 +56,7 @@ const tabs = computed(() => [
       >
         <a
           :href="href"
-          class="flex min-h-(--mobile-touch-min) flex-col items-center justify-center gap-0.5 px-1 text-[0.6875rem] font-medium transition-colors"
+          class="flex flex-col items-center justify-center gap-0.5 px-1 py-1 text-[0.6875rem] leading-none font-medium transition-colors"
           :class="cn(
             isMobileBottomNavActive(route.path, tab.matchPrefix)
               ? 'text-primary'
