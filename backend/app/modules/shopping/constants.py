@@ -38,3 +38,22 @@ DEFAULT_CATEGORIES: list[tuple[str, str]] = [
     ("Chemia", "spray-can"),
     ("Inne", "shopping-basket"),
 ]
+
+# Canonical ingredient names shown as quick-add chips when the family has no history.
+POPULAR_INGREDIENT_NAMES: list[str] = [
+    "mleko",
+    "jajko",
+    "masło",
+    "chleb",
+    "mąka pszenna",
+    "cukier",
+    "pomidor",
+    "cebula",
+    "ziemniak",
+    "olej",
+    "ryż",
+    "makaron",
+    "ser żółty",
+    "jogurt naturalny",
+    "banan",
+]

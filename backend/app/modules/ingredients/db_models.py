@@ -21,6 +21,8 @@ class IngredientDB(Base):
     name: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
     aliases: Mapped[list[str]] = mapped_column(JSONBType, default=list, nullable=False)
     base_unit: Mapped[str] = mapped_column(String(8), nullable=False)  # "g" or "ml"
+    # Lucide icon key of the default shopping category (see shopping.constants.DEFAULT_CATEGORIES).
+    shopping_category_key: Mapped[str | None] = mapped_column(String(64), nullable=True)
 
 
 class IngredientUnitDB(Base):

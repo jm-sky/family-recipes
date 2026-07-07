@@ -37,6 +37,11 @@ class ShoppingRepository:
         result = await self.db.execute(stmt)
         return result.scalar_one_or_none()
 
+    async def get_category_by_icon(self, family_id: str, icon: str) -> CategoryDB | None:
+        stmt = select(CategoryDB).where(CategoryDB.family_id == family_id, CategoryDB.icon == icon).order_by(CategoryDB.sort_order)
+        result = await self.db.execute(stmt)
+        return result.scalar_one_or_none()
+
     async def create_category(self, *, family_id: str, name: str, icon: str | None, sort_order: int) -> CategoryDB:
         category = CategoryDB(id=generate_id(), family_id=family_id, name=name, icon=icon, sort_order=sort_order)
         self.db.add(category)
@@ -185,6 +190,23 @@ class ShoppingRepository:
     async def touch_list(self, shopping_list: ShoppingListDB) -> None:
         shopping_list.updated_at = datetime.now(UTC)
         await self.db.commit()
+
+    async def list_recent_item_names(self, family_id: str, limit: int = 10) -> list[str]:
+        """Distinct recent item names across all active lists in a family."""
+        stmt = (
+            select(ShoppingListItemDB.name, func.max(ShoppingListItemDB.updated_at).label("last_used"))
+            .join(ShoppingListDB, ShoppingListItemDB.list_id == ShoppingListDB.id)
+            .where(
+                ShoppingListDB.family_id == family_id,
+                ShoppingListDB.deleted_at.is_(None),
+                ShoppingListItemDB.deleted_at.is_(None),
+            )
+            .group_by(func.lower(ShoppingListItemDB.name), ShoppingListItemDB.name)
+            .order_by(func.max(ShoppingListItemDB.updated_at).desc())
+            .limit(limit)
+        )
+        result = await self.db.execute(stmt)
+        return [row[0] for row in result.all()]
 
 
 def get_shopping_repository(db: AsyncSession = Depends(get_db)) -> ShoppingRepository:

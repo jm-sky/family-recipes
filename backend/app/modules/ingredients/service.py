@@ -50,7 +50,12 @@ class IngredientService:
         if matched is None:
             return None
         unit_to_base = {u.unit.lower(): u.amount_in_base for u in units_by_ingredient.get(matched.id, [])}
-        return IngredientMatch(ingredient_id=matched.id, base_unit=matched.base_unit, unit_to_base=unit_to_base)
+        return IngredientMatch(
+            ingredient_id=matched.id,
+            base_unit=matched.base_unit,
+            unit_to_base=unit_to_base,
+            shopping_category_key=matched.shopping_category_key,
+        )
 
     def _group_units(self, units: list[IngredientUnitDB]) -> dict[str, list[IngredientUnitDB]]:
         grouped: dict[str, list[IngredientUnitDB]] = {}
@@ -65,6 +70,7 @@ class IngredientService:
             aliases=list(ingredient.aliases),
             baseUnit=ingredient.base_unit,
             units=[IngredientUnitResponse(unit=u.unit, amountInBase=float(Decimal(u.amount_in_base))) for u in units],
+            shoppingCategoryKey=ingredient.shopping_category_key,
         )
 
 

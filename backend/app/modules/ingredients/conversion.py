@@ -34,6 +34,7 @@ class IngredientMatch:
     base_unit: str
     # unit -> how many base units one of that unit represents (base_unit -> 1)
     unit_to_base: dict[str, Decimal] = field(default_factory=dict)
+    shopping_category_key: str | None = None
 
     def to_base(self, quantity: Decimal | None, unit: str | None) -> Decimal | None:
         """Convert (quantity, unit) into the base unit, or None if impossible."""

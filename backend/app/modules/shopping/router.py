@@ -20,6 +20,8 @@ from app.modules.shopping.schemas import (
     CategoryCreateRequest,
     CategoryResponse,
     CategoryUpdateRequest,
+    ProductSuggestionResponse,
+    ProductSuggestionsResponse,
     QuickAddRequest,
     ReorderRequest,
     ShoppingItemCreateRequest,
@@ -102,6 +104,17 @@ async def list_shopping_lists(family_id: CurrentFamilyId, service: ShoppingServi
 async def create_shopping_list(payload: ShoppingListCreateRequest, current_user: CurrentUser, family_id: CurrentFamilyId, service: ShoppingServiceDep) -> ShoppingListResponse:
     """Create a shopping list (seeds default categories on first list)."""
     return await service.create_list(family_id, current_user.id, payload)
+
+
+@shopping_lists_router.get("/suggestions", response_model=ProductSuggestionsResponse)
+async def list_product_suggestions(
+    family_id: CurrentFamilyId,
+    service: ShoppingServiceDep,
+    q: str | None = None,
+    limit: int = 15,
+) -> ProductSuggestionsResponse:
+    """Product suggestions for the add-item UI (search, recent, popular)."""
+    return await service.get_suggestions(family_id, q, limit=min(limit, 30))
 
 
 @shopping_lists_router.get("/{list_id}", response_model=ShoppingListDetailResponse)

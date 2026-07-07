@@ -9,6 +9,7 @@ import { toast } from 'vue-sonner'
 import { useHandleError } from '@/shared/composables/useHandleError'
 import type { CreateItemRequest, UpdateItemRequest } from '../types'
 import { shoppingService } from '../services/shoppingService'
+import { shoppingSuggestionKeys } from './useProductSuggestions'
 import { shoppingKeys } from './useShoppingLists'
 
 export function useShoppingList(listIdRef: MaybeRefOrGetter<string>) {
@@ -27,6 +28,7 @@ export function useShoppingList(listIdRef: MaybeRefOrGetter<string>) {
   const invalidate = async () => {
     await queryClient.invalidateQueries({ queryKey: shoppingKeys.list(listId.value) })
     await queryClient.invalidateQueries({ queryKey: shoppingKeys.lists })
+    await queryClient.invalidateQueries({ queryKey: shoppingSuggestionKeys.all })
   }
 
   const addItemMutation = useMutation({

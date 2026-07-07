@@ -16,6 +16,12 @@ export const shoppingPl = {
     },
     list: {
       back: 'Wróć do list',
+      addProduct: 'Dodaj produkt',
+      searchPlaceholder: 'Szukaj lub wpisz produkt…',
+      searching: 'Szukam…',
+      recentSuggestions: 'Ostatnie',
+      popularSuggestions: 'Popularne',
+      moreOptions: 'Ilość, jednostka i kategoria',
       quickAddPlaceholder: 'np. „2 kg mąki" lub „szklanka cukru"',
       quickAddLabel: 'Szybkie dodawanie z tekstu',
       quickAdd: 'Parsuj',

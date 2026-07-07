@@ -78,3 +78,21 @@ async def test_quick_add_parses_and_sums(db_session, seeded_ingredients) -> None
 
     assert response.quantity == 260.0
     assert response.unit == "g"
+
+
+@pytest.mark.asyncio
+async def test_search_finds_alias(db_session, seeded_ingredients) -> None:
+    repository = IngredientRepository(db_session)
+    results = await repository.search("mąki")
+    assert any(item.name == "mąka pszenna" for item in results)
+
+
+@pytest.mark.asyncio
+async def test_add_item_auto_assigns_dairy_category(db_session, seeded_ingredients) -> None:
+    service, user_id, family_id, list_id = await _bootstrap_list(db_session)
+
+    response = await service.add_item(family_id, list_id, user_id, ShoppingItemCreateRequest(name="mleko"))
+
+    categories = await service.list_categories(family_id)
+    dairy = next(category for category in categories.categories if category.icon == "milk")
+    assert response.categoryId == dairy.id

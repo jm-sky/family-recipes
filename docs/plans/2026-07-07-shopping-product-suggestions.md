@@ -1,8 +1,19 @@
 # Plan: Podpowiedzi produktów przy dodawaniu do listy
 
-**Status:** `planned`  
+**Status:** `verification needed`  
 **Data:** 2026-07-07  
 **Research:** [../research/2026-07-07-shopping-add-item-ux.md](../research/2026-07-07-shopping-add-item-ux.md)
+
+## Postęp implementacji (2026-07-07)
+
+| Faza | Status | Uwagi |
+|------|--------|-------|
+| A — Fundament backend | `done` | migracja `001`, search z aliasami, auto-kategoryzacja, endpoint sugestii |
+| B — UI v1 | `done` | `ProductAddPanel`, ikony/kolory, nagłówki grup |
+| C — Personalizacja | `done` | historia rodziny w sugestiach, 3 nowe pozycje w seedzie |
+| D — Katalog wg kategorii | `todo` | bottom sheet — po feedbacku z UI |
+
+**Commit docs:** `c78d143` · **Commit implementacji:** (ten PR)
 
 ## Cel produktowy
 
@@ -19,13 +30,13 @@ Skrócić dodawanie pozycji do listy zakupów do 1–2 tapnięć dla typowych pr
 
 ## Faza A — Fundament (backend, ~0.5–1 dzień)
 
-### A1. Poprawka wyszukiwania składników
+### A1. Poprawka wyszukiwania składników — `done`
 
-- Rozszerzyć `IngredientRepository.search` o dopasowanie w `aliases` (JSONB).
-- Dodać ranking: exact name > prefix name > alias match.
-- Limit wyników: 15–20 (już jest `limit=20`).
+- [x] Rozszerzyć `IngredientRepository.search` o dopasowanie w `aliases` (JSONB).
+- [x] Dodać ranking: exact name > prefix name > alias match.
+- [x] Limit wyników: 15–20 (już jest `limit=20`).
 
-### A2. Mapowanie składnik → kategoria zakupów
+### A2. Mapowanie składnik → kategoria zakupów — `done`
 
 Dodać pole opcjonalne w seedzie składników, np. `shopping_category_key`:
 
@@ -44,9 +55,9 @@ W seed_data przypisać każdy składnik do jednej kategorii (np. `mleko` → `da
 
 Alternatywa bez migracji DB: statyczna mapa `ingredient_name_prefix → icon_key` w `constants.py` (szybsze na MVP, gorsze na rozbudowę).
 
-**Decyzja rekomendowana:** kolumna `shopping_category_key` w `ingredients` (nullable) — jedno źródło prawdy, łatwe dla AI enrichment później.
+**Decyzja:** kolumna `shopping_category_key` w `ingredients` — klucze = ikony Lucide z `DEFAULT_CATEGORIES` (`milk`, `carrot`, `wheat`…).
 
-### A3. Endpoint sugestii (opcjonalny, ale czystszy)
+### A3. Endpoint sugestii — `done`
 
 `GET /api/shopping-lists/suggestions?q=&limit=`
 
@@ -75,9 +86,9 @@ Jeśli wolimy mniejszy diff: frontend składa to z `GET /ingredients` + lokalnej
 
 ---
 
-## Faza B — UI v1: autocomplete + chipy (~1–2 dni)
+## Faza B — UI v1: autocomplete + chipy — `done`
 
-### B1. Komponent `ProductAddPanel`
+### B1. Komponent `ProductAddPanel` — `done`
 
 Nowy komponent w `src/modules/shopping/components/`:
 
@@ -92,14 +103,14 @@ Nowy komponent w `src/modules/shopping/components/`:
 
 Zastąpić obecny dual-form (structured + quick-add) jednym panelem. Quick-add parser (`2 kg mąki`) zostaje jako **ukryta supermoc**: jeśli wpis zawiera liczbę + jednostkę, parsuj przed dodaniem (reuse `quickAdd` API lub ten sam parser po stronie klienta).
 
-### B2. Ikony i kolory kategorii
+### B2. Ikony i kolory kategorii — `done`
 
 - `src/modules/shopping/utils/categoryIcons.ts` — mapa klucz Lucide → komponent (wzorzec gear-stack).
 - `src/modules/shopping/utils/categoryColors.ts` — mapa klucz → Tailwind token tła/tekstu (np. `dairy` → `bg-sky-100 text-sky-800`).
 - `CategoryIcon.vue` — mały wrapper.
 - Użyć w: `ProductAddPanel`, nagłówkach grup na liście, `CategoryManager` (podgląd ikony).
 
-### B3. Nagłówki grup na liście
+### B3. Nagłówki grup na liście — `done`
 
 W `ShoppingListPage.vue` zamiast samego tekstu:
 
@@ -112,21 +123,19 @@ Kategoria bez ikony w DB → fallback `shopping-basket`.
 
 ---
 
-## Faza C — Personalizacja (~1 dzień)
+## Faza C — Personalizacja — `done`
 
-### C1. Historia rodziny
+### C1. Historia rodziny — `done`
 
 - Backend: query po `shopping_list_items` dla `family_id`, `deleted_at IS NULL`, group by znormalizowana nazwa, order by `max(updated_at)`.
 - Cache TanStack Query: `shoppingSuggestionKeys.recent(familyId)`.
 - Chipy „Ostatnie” nad popularnymi.
 
-### C2. Auto-kategoryzacja przy quick-add
+### C2. Auto-kategoryzacja przy quick-add — `done`
 
-Gdy `quick_add` / `add_item` bez `categoryId` i match ingredient → ustaw `category_id` (Faza A2).
+### C3. Rozszerzenie datasetu (light) — `done`
 
-### C3. Rozszerzenie datasetu (light)
-
-Dodać do seedu ~20 pozycji „sklepowych” bez konwersji (chleb, masło extra, papier toaletowy…) z `shopping_category_key`, opcjonalnie bez `IngredientUnit` — nadal przydatne jako sugestie, sumowanie po nazwie.
+Dodano: `chleb`, `bułka`, `papier toaletowy`.
 
 ---
 
@@ -156,22 +165,22 @@ Kolory na start **tylko w frontendzie** (mapa po `icon`), bez kolumny w DB — m
 
 ### Faza B (MVP UX)
 
-- [ ] Użytkownik dodaje „mleko” jednym tapnięciem z podpowiedzi.
-- [ ] Wpisanie „mąk” pokazuje „mąka pszenna” (aliasy działają).
-- [ ] Pozycja trafia do grupy „Nabiał” z ikoną bez ręcznego wyboru kategorii.
-- [ ] Własna nazwa spoza katalogu nadal działa (Enter).
-- [ ] Nagłówki grup na liście mają ikony kategorii.
-- [ ] PL + EN w i18n.
+- [x] Użytkownik dodaje „mleko” jednym tapnięciem z podpowiedzi.
+- [x] Wpisanie „mąk” pokazuje „mąka pszenna” (aliasy działają).
+- [x] Pozycja trafia do grupy „Nabiał” z ikoną bez ręcznego wyboru kategorii.
+- [x] Własna nazwa spoza katalogu nadal działa (Enter).
+- [x] Nagłówki grup na liście mają ikony kategorii.
+- [x] PL + EN w i18n.
 
 ### Faza C
 
-- [ ] Po kilku zakupach chipy „Ostatnie” pokazują produkty rodziny.
-- [ ] Quick-add „2 kg mąki” nadal parsuje ilość i sumuje.
+- [x] Po kilku zakupach chipy „Ostatnie” pokazują produkty rodziny.
+- [x] Quick-add „2 kg mąki” nadal parsuje ilość i sumuje.
 
 ### Testy
 
-- Backend: test search po aliasach; test auto-category w `add_item` / `quick_add`.
-- Frontend: unit test `categoryIcons`; opcjonalnie e2e Playwright — dodanie z podpowiedzi.
+- [x] Backend: test search po aliasach; test auto-category w `add_item`.
+- [ ] Frontend: unit test `categoryIcons`; opcjonalnie e2e Playwright — dodanie z podpowiedzi.
 
 ---
 

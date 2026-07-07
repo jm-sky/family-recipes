@@ -10,8 +10,8 @@ import re
 from decimal import Decimal, InvalidOperation
 from typing import Protocol
 
-from app.modules.ingredients.conversion import IngredientMatch
-from app.modules.shopping.constants import DEFAULT_CATEGORIES, UNITS_SET
+from app.modules.ingredients.conversion import IngredientMatch, _fold
+from app.modules.shopping.constants import DEFAULT_CATEGORIES, POPULAR_INGREDIENT_NAMES, UNITS_SET
 from app.modules.shopping.db_models import CategoryDB, ShoppingListDB, ShoppingListItemDB
 from app.modules.shopping.exceptions import (
     CategoryNotFoundError,
@@ -25,6 +25,8 @@ from app.modules.shopping.schemas import (
     CategoryCreateRequest,
     CategoryResponse,
     CategoryUpdateRequest,
+    ProductSuggestionResponse,
+    ProductSuggestionsResponse,
     QuickAddRequest,
     ReorderRequest,
     ShoppingItemCreateRequest,
@@ -98,6 +100,8 @@ class IngredientMatcher(Protocol):
     """Minimal interface the shopping service needs from the ingredients module."""
 
     async def match(self, name: str) -> IngredientMatch | None: ...
+
+    async def search(self, query: str | None): ...
 
 
 class ShoppingService:
@@ -227,6 +231,71 @@ class ShoppingService:
                 item.position = by_id[item.id]
         await self.repository.save()
 
+    async def get_suggestions(self, family_id: str, query: str | None = None, limit: int = 15) -> ProductSuggestionsResponse:
+        """Unified product suggestions for the add-item UI."""
+        suggestions: list[ProductSuggestionResponse] = []
+        seen: set[str] = set()
+
+        def add_suggestion(*, name: str, ingredient_id: str | None, category_icon: str | None, source: str) -> None:
+            key = _fold(name)
+            if not key or key in seen:
+                return
+            seen.add(key)
+            suggestions.append(
+                ProductSuggestionResponse(
+                    name=name,
+                    ingredientId=ingredient_id,
+                    categoryId=None,
+                    categoryIcon=category_icon,
+                    source=source,
+                )
+            )
+
+        if self.matcher is not None and query:
+            response = await self.matcher.search(query)
+            for ingredient in response.ingredients:
+                add_suggestion(
+                    name=ingredient.name,
+                    ingredient_id=ingredient.id,
+                    category_icon=ingredient.shoppingCategoryKey,
+                    source="ingredient",
+                )
+        else:
+            for recent_name in await self.repository.list_recent_item_names(family_id, limit=10):
+                match = await self.matcher.match(recent_name) if self.matcher is not None else None
+                add_suggestion(
+                    name=recent_name,
+                    ingredient_id=match.ingredient_id if match is not None else None,
+                    category_icon=match.shopping_category_key if match is not None else None,
+                    source="recent",
+                )
+
+            if self.matcher is not None:
+                popular_response = await self.matcher.search(None)
+                popular_by_name = {item.name: item for item in popular_response.ingredients}
+                for popular_name in POPULAR_INGREDIENT_NAMES:
+                    ingredient_response = popular_by_name.get(popular_name)
+                    if ingredient_response is not None:
+                        add_suggestion(
+                            name=ingredient_response.name,
+                            ingredient_id=ingredient_response.id,
+                            category_icon=ingredient_response.shoppingCategoryKey,
+                            source="popular",
+                        )
+                    else:
+                        add_suggestion(name=popular_name, ingredient_id=None, category_icon=None, source="popular")
+
+        resolved: list[ProductSuggestionResponse] = []
+        for suggestion in suggestions[:limit]:
+            category_id = suggestion.categoryId
+            if category_id is None and suggestion.categoryIcon:
+                category = await self.repository.get_category_by_icon(family_id, suggestion.categoryIcon)
+                if category is not None:
+                    category_id = category.id
+            resolved.append(suggestion.model_copy(update={"categoryId": category_id}))
+
+        return ProductSuggestionsResponse(suggestions=resolved)
+
     # ==================== Helpers ====================
 
     async def _add_or_merge(
@@ -247,6 +316,9 @@ class ShoppingService:
         no conversion mapping, the item is kept separate.
         """
         match = await self.matcher.match(name) if self.matcher is not None else None
+        resolved_category_id = category_id
+        if resolved_category_id is None and match is not None and match.shopping_category_key:
+            resolved_category_id = await self._category_id_for_icon(shopping_list.family_id, match.shopping_category_key)
 
         if match is not None:
             merged = await self._try_merge(shopping_list, match, quantity, unit)
@@ -257,7 +329,7 @@ class ShoppingService:
         item = await self.repository.create_item(
             list_id=shopping_list.id,
             name=name,
-            category_id=category_id,
+            category_id=resolved_category_id,
             ingredient_id=match.ingredient_id if match is not None else None,
             quantity=quantity,
             unit=unit,
@@ -288,6 +360,10 @@ class ShoppingService:
             await self.repository.touch_list(shopping_list)
             return existing
         return None
+
+    async def _category_id_for_icon(self, family_id: str, icon: str) -> str | None:
+        category = await self.repository.get_category_by_icon(family_id, icon)
+        return category.id if category is not None else None
 
     async def _require_list(self, family_id: str, list_id: str) -> ShoppingListDB:
         shopping_list = await self.repository.get_list(list_id, family_id)

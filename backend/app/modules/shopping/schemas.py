@@ -102,3 +102,18 @@ class ReorderEntry(BaseModel):
 
 class ReorderRequest(BaseModel):
     items: list[ReorderEntry]
+
+
+# ==================== Product suggestions ====================
+
+
+class ProductSuggestionResponse(BaseModel):
+    name: str
+    ingredientId: str | None = None
+    categoryId: str | None = None
+    categoryIcon: str | None = None
+    source: str  # ingredient | recent | popular
+
+
+class ProductSuggestionsResponse(BaseModel):
+    suggestions: list[ProductSuggestionResponse]

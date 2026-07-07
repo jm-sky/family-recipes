@@ -8,6 +8,7 @@ import type {
   CreateCategoryRequest,
   CreateItemRequest,
   CreateListRequest,
+  ProductSuggestion,
   ShoppingItem,
   ShoppingList,
   ShoppingListDetail,
@@ -39,6 +40,13 @@ export const shoppingService = {
 
   async deleteList(listId: string): Promise<void> {
     await apiClient.delete(`/shopping-lists/${listId}`)
+  },
+
+  async getSuggestions(q?: string, limit = 15): Promise<ProductSuggestion[]> {
+    const response = await apiClient.get<{ suggestions: ProductSuggestion[] }>('/shopping-lists/suggestions', {
+      params: { q: q || undefined, limit },
+    })
+    return response.data.suggestions
   },
 
   // ---- Items ----

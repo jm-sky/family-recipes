@@ -64,6 +64,18 @@ export interface UpdateCategoryRequest {
   sortOrder?: number
 }
 
+export interface ProductSuggestion {
+  name: string
+  ingredientId: string | null
+  categoryId: string | null
+  categoryIcon: string | null
+  source: 'ingredient' | 'recent' | 'popular'
+}
+
+export interface ProductSuggestionsResponse {
+  suggestions: ProductSuggestion[]
+}
+
 // Predefined units (mirrors backend app/modules/shopping/constants.py UNITS)
 export const UNITS = [
   'szt',

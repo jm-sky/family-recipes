@@ -4,15 +4,44 @@ import logging
 from decimal import Decimal
 
 from fastapi import Depends
-from sqlalchemy import func, or_, select
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.common.id_utils import generate_id
 from app.core.database import get_db
+from app.modules.ingredients.conversion import _fold
 from app.modules.ingredients.db_models import IngredientDB, IngredientUnitDB
 from app.modules.ingredients.seed_data import IngredientSeed
 
 logger = logging.getLogger(__name__)
+
+
+def _search_score(query: str, ingredient: IngredientDB) -> int:
+    """Rank how well an ingredient matches a query (higher is better)."""
+    folded_query = _fold(query)
+    if not folded_query:
+        return 0
+
+    folded_name = _fold(ingredient.name)
+    if folded_name == folded_query:
+        return 100
+    if folded_name.startswith(folded_query):
+        return 80
+    if folded_query in folded_name:
+        return 60
+
+    best_alias = 0
+    for alias in ingredient.aliases:
+        folded_alias = _fold(alias)
+        if not folded_alias:
+            continue
+        if folded_alias == folded_query:
+            best_alias = max(best_alias, 90)
+        elif folded_alias.startswith(folded_query):
+            best_alias = max(best_alias, 70)
+        elif folded_query in folded_alias:
+            best_alias = max(best_alias, 50)
+    return best_alias
 
 
 class IngredientRepository:
@@ -37,15 +66,23 @@ class IngredientRepository:
         result = await self.db.execute(select(IngredientDB).where(IngredientDB.id == ingredient_id))
         return result.scalar_one_or_none()
 
+    async def get_by_name(self, name: str) -> IngredientDB | None:
+        result = await self.db.execute(select(IngredientDB).where(IngredientDB.name == name))
+        return result.scalar_one_or_none()
+
     async def get_units_for(self, ingredient_id: str) -> list[IngredientUnitDB]:
         result = await self.db.execute(select(IngredientUnitDB).where(IngredientUnitDB.ingredient_id == ingredient_id))
         return list(result.scalars().all())
 
     async def search(self, query: str, limit: int = 20) -> list[IngredientDB]:
-        pattern = f"%{query.lower()}%"
-        stmt = select(IngredientDB).where(or_(func.lower(IngredientDB.name).like(pattern))).order_by(IngredientDB.name).limit(limit)
-        result = await self.db.execute(stmt)
-        return list(result.scalars().all())
+        """Search by canonical name and aliases with relevance ranking."""
+        normalized = query.strip()
+        if not normalized:
+            return (await self.list_all())[:limit]
+
+        scored = [(score, ingredient) for ingredient in await self.list_all() if (score := _search_score(normalized, ingredient)) > 0]
+        scored.sort(key=lambda entry: (-entry[0], entry[1].name))
+        return [ingredient for _, ingredient in scored[:limit]]
 
     async def bulk_create(self, seeds: list[IngredientSeed]) -> int:
         created = 0
@@ -57,6 +94,7 @@ class IngredientRepository:
                     name=seed["name"],
                     aliases=list(seed["aliases"]),
                     base_unit=seed["base_unit"],
+                    shopping_category_key=seed["shopping_category_key"],
                 )
             )
             for unit, amount in seed["units"].items():

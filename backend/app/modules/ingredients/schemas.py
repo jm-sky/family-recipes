@@ -14,6 +14,7 @@ class IngredientResponse(BaseModel):
     aliases: list[str]
     baseUnit: str
     units: list[IngredientUnitResponse]
+    shoppingCategoryKey: str | None = None
 
 
 class IngredientsResponse(BaseModel):

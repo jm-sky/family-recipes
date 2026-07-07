@@ -1,0 +1,253 @@
+<script setup lang="ts">
+import { ChevronDown, Plus, Search } from 'lucide-vue-next'
+import { computed, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import Select from '@/components/ui/select/Select.vue'
+import SelectContent from '@/components/ui/select/SelectContent.vue'
+import SelectItem from '@/components/ui/select/SelectItem.vue'
+import SelectTrigger from '@/components/ui/select/SelectTrigger.vue'
+import SelectValue from '@/components/ui/select/SelectValue.vue'
+import { cn } from '@/lib/utils'
+import CategoryIcon from '@/modules/shopping/components/CategoryIcon.vue'
+import { useProductSuggestions } from '@/modules/shopping/composables/useProductSuggestions'
+import { type Category, type CreateItemRequest, type ProductSuggestion, UNITS } from '@/modules/shopping/types'
+import { getCategoryColors } from '@/modules/shopping/utils/categoryColors'
+
+const props = defineProps<{
+  categories: Category[] | undefined
+  disabled?: boolean
+}>()
+
+const emit = defineEmits<{
+  add: [request: CreateItemRequest]
+  quickAdd: [text: string]
+}>()
+
+const { t } = useI18n()
+
+const searchText = ref('')
+const showDetails = ref(false)
+const detailQuantity = ref('')
+const detailUnit = ref('')
+const detailCategory = ref('')
+
+const NO_UNIT = '__none__'
+const NO_CATEGORY = '__none__'
+
+const { data: suggestionsData, isFetching } = useProductSuggestions(searchText)
+
+const QUICK_ADD_RE = /^\s*\d+(?:[.,]\d+)?/
+
+const chipSuggestions = computed(() => {
+  if (searchText.value.trim()) return []
+  return suggestionsData.value ?? []
+})
+
+const searchResults = computed(() => {
+  const query = searchText.value.trim()
+  if (!query) return []
+  return suggestionsData.value ?? []
+})
+
+const recentSuggestions = computed(() => chipSuggestions.value.filter(s => s.source === 'recent'))
+const popularSuggestions = computed(() => chipSuggestions.value.filter(s => s.source !== 'recent'))
+
+function categoryIconForSuggestion(suggestion: ProductSuggestion): string | null {
+  if (suggestion.categoryIcon) return suggestion.categoryIcon
+  if (suggestion.categoryId) {
+    return props.categories?.find(c => c.id === suggestion.categoryId)?.icon ?? null
+  }
+  return null
+}
+
+function buildAddRequest(name: string, suggestion?: ProductSuggestion): CreateItemRequest {
+  const request: CreateItemRequest = { name }
+  if (suggestion?.categoryId) request.categoryId = suggestion.categoryId
+  if (detailQuantity.value) request.quantity = Number(detailQuantity.value.replace(',', '.'))
+  if (detailUnit.value && detailUnit.value !== NO_UNIT) request.unit = detailUnit.value
+  if (!suggestion?.categoryId && detailCategory.value && detailCategory.value !== NO_CATEGORY) {
+    request.categoryId = detailCategory.value
+  }
+  return request
+}
+
+function resetDetails() {
+  detailQuantity.value = ''
+  detailUnit.value = ''
+  detailCategory.value = ''
+  showDetails.value = false
+}
+
+async function handleSuggestionSelect(suggestion: ProductSuggestion) {
+  emit('add', buildAddRequest(suggestion.name, suggestion))
+  searchText.value = ''
+  resetDetails()
+}
+
+async function handleSubmit() {
+  const text = searchText.value.trim()
+  if (!text) return
+
+  if (QUICK_ADD_RE.test(text)) {
+    emit('quickAdd', text)
+  }
+  else {
+    const matched = searchResults.value.find(s => s.name.toLowerCase() === text.toLowerCase())
+    emit('add', buildAddRequest(matched?.name ?? text, matched))
+  }
+
+  searchText.value = ''
+  resetDetails()
+}
+</script>
+
+<template>
+  <div class="space-y-3">
+    <form class="space-y-3" @submit.prevent="handleSubmit">
+      <div class="space-y-1">
+        <Label for="product-search" class="text-xs text-muted-foreground">
+          {{ t('shopping.list.addProduct') }}
+        </Label>
+        <div class="relative">
+          <Search :size="16" class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            id="product-search"
+            v-model="searchText"
+            :placeholder="t('shopping.list.searchPlaceholder')"
+            class="pl-9"
+            :disabled="disabled"
+            autocomplete="off"
+          />
+        </div>
+      </div>
+
+      <div v-if="searchResults.length > 0" class="rounded-md border bg-popover p-1 shadow-sm">
+        <button
+          v-for="suggestion in searchResults"
+          :key="`${suggestion.source}-${suggestion.name}`"
+          type="button"
+          class="flex w-full items-center gap-2 rounded-sm px-2 py-2 text-left text-sm hover:bg-accent"
+          :disabled="disabled"
+          @click="handleSuggestionSelect(suggestion)"
+        >
+          <CategoryIcon :icon="categoryIconForSuggestion(suggestion)" :size="16" class="shrink-0" />
+          <span class="flex-1">{{ suggestion.name }}</span>
+        </button>
+      </div>
+
+      <div v-else-if="isFetching && searchText.trim()" class="text-xs text-muted-foreground">
+        {{ t('shopping.list.searching') }}
+      </div>
+
+      <div v-if="chipSuggestions.length > 0" class="space-y-2">
+        <div v-if="recentSuggestions.length > 0" class="space-y-1.5">
+          <p class="text-xs font-medium text-muted-foreground">
+            {{ t('shopping.list.recentSuggestions') }}
+          </p>
+          <div class="flex flex-wrap gap-1.5">
+            <button
+              v-for="suggestion in recentSuggestions"
+              :key="`recent-${suggestion.name}`"
+              type="button"
+              :class="cn(
+                'inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium transition-opacity hover:opacity-80',
+                getCategoryColors(categoryIconForSuggestion(suggestion)).chip,
+              )"
+              :disabled="disabled"
+              @click="handleSuggestionSelect(suggestion)"
+            >
+              <CategoryIcon :icon="categoryIconForSuggestion(suggestion)" :size="12" />
+              {{ suggestion.name }}
+            </button>
+          </div>
+        </div>
+
+        <div v-if="popularSuggestions.length > 0" class="space-y-1.5">
+          <p class="text-xs font-medium text-muted-foreground">
+            {{ t('shopping.list.popularSuggestions') }}
+          </p>
+          <div class="flex flex-wrap gap-1.5">
+            <button
+              v-for="suggestion in popularSuggestions"
+              :key="`popular-${suggestion.name}`"
+              type="button"
+              :class="cn(
+                'inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium transition-opacity hover:opacity-80',
+                getCategoryColors(categoryIconForSuggestion(suggestion)).chip,
+              )"
+              :disabled="disabled"
+              @click="handleSuggestionSelect(suggestion)"
+            >
+              <CategoryIcon :icon="categoryIconForSuggestion(suggestion)" :size="12" />
+              {{ suggestion.name }}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <button
+          type="button"
+          class="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
+          @click="showDetails = !showDetails"
+        >
+          <ChevronDown :size="14" class="transition-transform" :class="{ 'rotate-180': showDetails }" />
+          {{ t('shopping.list.moreOptions') }}
+        </button>
+
+        <div v-if="showDetails" class="mt-2 grid gap-2 sm:grid-cols-3">
+          <div class="space-y-1">
+            <Label for="item-qty" class="text-xs text-muted-foreground">{{ t('shopping.list.quantity') }}</Label>
+            <Input
+              id="item-qty"
+              v-model="detailQuantity"
+              :placeholder="t('shopping.list.quantityExample')"
+              inputmode="decimal"
+              :disabled="disabled"
+            />
+          </div>
+          <div class="space-y-1">
+            <Label class="text-xs text-muted-foreground">{{ t('shopping.list.unit') }}</Label>
+            <Select v-model="detailUnit" :disabled="disabled">
+              <SelectTrigger>
+                <SelectValue :placeholder="t('shopping.list.noUnit')" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem :value="NO_UNIT">
+                  {{ t('shopping.list.noUnit') }}
+                </SelectItem>
+                <SelectItem v-for="unit in UNITS" :key="unit" :value="unit">
+                  {{ unit }}
+                </SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div class="space-y-1">
+            <Label class="text-xs text-muted-foreground">{{ t('shopping.list.category') }}</Label>
+            <Select v-model="detailCategory" :disabled="disabled">
+              <SelectTrigger>
+                <SelectValue :placeholder="t('shopping.list.noCategory')" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem :value="NO_CATEGORY">
+                  {{ t('shopping.list.noCategory') }}
+                </SelectItem>
+                <SelectItem v-for="category in categories ?? []" :key="category.id" :value="category.id">
+                  {{ category.name }}
+                </SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+      </div>
+
+      <Button type="submit" :disabled="!searchText.trim() || disabled">
+        <Plus :size="16" />
+        {{ t('shopping.list.add') }}
+      </Button>
+    </form>
+  </div>
+</template>

@@ -4,6 +4,7 @@ import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import CategoryIcon from '@/modules/shopping/components/CategoryIcon.vue'
 import { useShoppingLists } from '@/modules/shopping/composables/useShoppingLists'
 import type { Category } from '@/modules/shopping/types'
 
@@ -58,6 +59,7 @@ async function saveEdit(category: Category) {
           </Button>
         </template>
         <template v-else>
+          <CategoryIcon :icon="category.icon" :size="16" class="shrink-0" />
           <span class="flex-1 text-sm">{{ category.name }}</span>
           <Button size="icon" variant="ghost" @click="startEdit(category)">
             <Pencil :size="15" />

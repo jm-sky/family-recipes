@@ -16,6 +16,12 @@ export const shoppingEn = {
     },
     list: {
       back: 'Back to lists',
+      addProduct: 'Add product',
+      searchPlaceholder: 'Search or type a product…',
+      searching: 'Searching…',
+      recentSuggestions: 'Recent',
+      popularSuggestions: 'Popular',
+      moreOptions: 'Quantity, unit and category',
       quickAddPlaceholder: 'e.g. "2 kg flour" or "1 cup sugar"',
       quickAddLabel: 'Quick add from text',
       quickAdd: 'Parse',
