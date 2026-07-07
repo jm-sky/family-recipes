@@ -13,5 +13,6 @@ Plany implementacji funkcji i większych zmian w projekcie.
 | [../build-plan.md](../build-plan.md) | Fazowy plan budowy MVP z boilerplate'u gear-stack (Fazy 0–6) — legacy | `in progress` |
 | [2026-07-07-shopping-product-suggestions.md](2026-07-07-shopping-product-suggestions.md) | Podpowiedzi produktów, ikony/kolory kategorii, auto-kategoryzacja | `verification needed` |
 | [2026-07-07-keep-export.md](2026-07-07-keep-export.md) | Jednokierunkowy eksport list zakupów do Google Keep (Gmail, gkeepapi) | `planned` |
+| [2026-07-07-native-mobile-ux.md](2026-07-07-native-mobile-ux.md) | Natywny look & feel na mobile — shell, bottom nav, listy, ścieżka Android | `in progress` |
 
 When adding a new entry: create `YYYY-MM-DD-slug.md`, add a row here.
