@@ -65,5 +65,16 @@ export const recipesEn = {
       error: 'Something went wrong with the recipe',
       imageUploaded: 'Photo uploaded',
     },
+    import: {
+      title: 'Import from link',
+      description: 'Paste a recipe page URL — AI will fill the form for you to confirm.',
+      urlLabel: 'Page URL',
+      urlPlaceholder: 'https://…',
+      button: 'Import',
+      importing: 'Importing…',
+      success: 'Recipe imported — review and save',
+      error: 'Could not import recipe',
+      premiumRequired: 'AI import requires Premium or your own OpenRouter API key',
+    },
   },
 }

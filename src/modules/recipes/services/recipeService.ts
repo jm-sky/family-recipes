@@ -7,6 +7,7 @@ import type {
   AddToListResult,
   CreateRecipeRequest,
   RecipeDetail,
+  RecipeImportDraft,
   RecipeSummary,
   RecipeTag,
   UpdateRecipeRequest,
@@ -58,6 +59,11 @@ export const recipeService = {
 
   async createTag(name: string): Promise<RecipeTag> {
     const response = await apiClient.post<RecipeTag>('/tags', { name })
+    return response.data
+  },
+
+  async importFromUrl(url: string): Promise<RecipeImportDraft> {
+    const response = await apiClient.post<RecipeImportDraft>('/ai/recipes/import', { url })
     return response.data
   },
 }

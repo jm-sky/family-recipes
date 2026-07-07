@@ -207,6 +207,8 @@ class AdminService:
             avatarUrl=updated_user.avatar_url,
             isActive=updated_user.is_active,
             isAdmin=updated_user.is_admin,
+            isOwner=updated_user.is_owner,
+            isPremium=updated_user.is_premium,
             isEmailVerified=updated_user.is_email_verified,
             emailVerifiedAt=self._serialize_datetime(updated_user.email_verified_at) or "",
             createdAt=self._serialize_datetime(updated_user.created_at) or "",

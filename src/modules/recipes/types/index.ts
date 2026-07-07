@@ -54,3 +54,11 @@ export interface AddToListResult {
   addedCount: number
   skippedCount: number
 }
+
+export interface RecipeImportDraft {
+  title: string
+  sourceUrl: string
+  category: RecipeCategory
+  servings: number | null
+  ingredients: { name: string, ingredientId?: string | null, quantity: number | null, unit: string | null }[]
+}

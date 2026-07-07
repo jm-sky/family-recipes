@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { ArrowLeft, Plus, Trash2, Upload } from 'lucide-vue-next'
+import { ArrowLeft, Link2, Plus, Trash2, Upload } from 'lucide-vue-next'
 import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { RouterLink, useRoute } from 'vue-router'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import Select from '@/components/ui/select/Select.vue'
@@ -13,14 +13,20 @@ import SelectItem from '@/components/ui/select/SelectItem.vue'
 import SelectTrigger from '@/components/ui/select/SelectTrigger.vue'
 import SelectValue from '@/components/ui/select/SelectValue.vue'
 import AuthenticatedLayout from '@/layouts/AuthenticatedLayout.vue'
+import AiPremiumFeatureAlert from '@/modules/ai/components/AiPremiumFeatureAlert.vue'
+import { useAi } from '@/modules/ai/composables/useAi'
 import { useRecipe } from '@/modules/recipes/composables/useRecipe'
+import { useRecipeImport } from '@/modules/recipes/composables/useRecipeImport'
 import { useRecipes } from '@/modules/recipes/composables/useRecipes'
 import { categoryLabelKey, RecipesRoutePaths } from '@/modules/recipes/routes'
 import { RECIPE_CATEGORIES, type RecipeCategory } from '@/modules/recipes/types'
 import { UNITS } from '@/modules/shopping/types'
+import { config } from '@/shared/config/config'
 
 const { t } = useI18n()
 const route = useRoute()
+const { canUseAi } = useAi()
+const aiImportEnabled = computed(() => config.features.ai.enabled)
 
 const recipeIdParam = computed(() => {
   const id = route.params.recipeId
@@ -29,6 +35,9 @@ const recipeIdParam = computed(() => {
 
 const { recipe, isLoading, isNew, createRecipe, updateRecipe, isSaving, uploadImage } = useRecipe(recipeIdParam)
 const { tags } = useRecipes()
+const { importFromUrl, isImporting } = useRecipeImport()
+
+const importUrl = ref('')
 
 const title = ref('')
 const sourceUrl = ref('')
@@ -107,6 +116,24 @@ async function handleImageChange(event: Event) {
   await uploadImage(file)
   input.value = ''
 }
+
+async function handleImport() {
+  const url = importUrl.value.trim()
+  if (!url) return
+  const draft = await importFromUrl(url)
+  title.value = draft.title
+  sourceUrl.value = draft.sourceUrl
+  category.value = draft.category
+  servings.value = draft.servings ? String(draft.servings) : ''
+  ingredients.value = draft.ingredients.map(i => ({
+    name: i.name,
+    quantity: i.quantity !== null ? String(i.quantity) : '',
+    unit: i.unit ?? NO_UNIT,
+  }))
+  if (ingredients.value.length === 0) {
+    ingredients.value = [{ name: '', quantity: '', unit: NO_UNIT }]
+  }
+}
 </script>
 
 <template>
@@ -127,6 +154,44 @@ async function handleImageChange(event: Event) {
       <div v-if="!isNew && isLoading" class="h-24 w-full bg-muted rounded animate-pulse" />
 
       <form v-else class="space-y-5" @submit.prevent="handleSubmit">
+        <Card v-if="isNew && aiImportEnabled">
+          <CardHeader>
+            <CardTitle class="text-base flex items-center gap-2">
+              <Link2 :size="18" />
+              {{ t('recipes.import.title') }}
+            </CardTitle>
+            <CardDescription>
+              {{ t('recipes.import.description') }}
+            </CardDescription>
+          </CardHeader>
+          <CardContent class="space-y-3">
+            <AiPremiumFeatureAlert
+              v-if="!canUseAi"
+              :description="t('recipes.import.premiumRequired')"
+              show-token-option
+            />
+            <template v-else>
+              <div class="space-y-2">
+                <Label for="import-url">{{ t('recipes.import.urlLabel') }}</Label>
+                <Input
+                  id="import-url"
+                  v-model="importUrl"
+                  type="url"
+                  :placeholder="t('recipes.import.urlPlaceholder')"
+                />
+              </div>
+              <Button
+                type="button"
+                variant="secondary"
+                :disabled="isImporting || !importUrl.trim()"
+                @click="handleImport"
+              >
+                {{ isImporting ? t('recipes.import.importing') : t('recipes.import.button') }}
+              </Button>
+            </template>
+          </CardContent>
+        </Card>
+
         <Card>
           <CardContent class="grid gap-4 p-4">
             <div class="space-y-2">

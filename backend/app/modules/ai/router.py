@@ -6,6 +6,7 @@ from app.modules.ai.routers import (
     chat_router,
     history_router,
     models_router,
+    recipes_router,
     settings_router,
 )
 
@@ -41,3 +42,4 @@ router.include_router(chat_router)
 router.include_router(models_router)
 router.include_router(settings_router)
 router.include_router(history_router)
+router.include_router(recipes_router)

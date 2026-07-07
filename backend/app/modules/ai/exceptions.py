@@ -47,3 +47,9 @@ class EncryptionError(AIError):
     """Raised when token encryption/decryption fails."""
 
     pass
+
+
+class RecipeImportError(AIError):
+    """Raised when recipe import from URL fails."""
+
+    pass

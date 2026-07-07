@@ -65,5 +65,16 @@ export const recipesPl = {
       error: 'Coś poszło nie tak z przepisem',
       imageUploaded: 'Zdjęcie wgrane',
     },
+    import: {
+      title: 'Import z linku',
+      description: 'Wklej adres strony z przepisem — AI wypełni formularz do potwierdzenia.',
+      urlLabel: 'Adres URL',
+      urlPlaceholder: 'https://…',
+      button: 'Importuj',
+      importing: 'Importowanie…',
+      success: 'Przepis zaimportowany — sprawdź i zapisz',
+      error: 'Nie udało się zaimportować przepisu',
+      premiumRequired: 'Import AI wymaga Premium lub własnego klucza OpenRouter',
+    },
   },
 }

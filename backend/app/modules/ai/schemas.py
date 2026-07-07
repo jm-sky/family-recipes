@@ -227,3 +227,39 @@ class AiHistoryQuery(BaseModel):
     limit: int = Field(default=50, ge=1, le=100, description="Number of items to return")
     offset: int = Field(default=0, ge=0, description="Offset for pagination")
     operation_type: str | None = Field(None, description="Filter by operation type")
+
+
+# ============================================================================
+# Recipe import schemas
+# ============================================================================
+
+
+class RecipeImportRequest(BaseModel):
+    """Request to import a recipe draft from a URL."""
+
+    url: str = Field(..., min_length=8, max_length=2048, description="Public recipe page URL")
+
+    model_config = {"populate_by_name": True}
+
+
+class RecipeImportIngredient(BaseModel):
+    """Normalized ingredient line in an import draft."""
+
+    name: str
+    ingredientId: str | None = None
+    quantity: float | None = None
+    unit: str | None = None
+
+    model_config = {"populate_by_name": True}
+
+
+class RecipeImportResponse(BaseModel):
+    """Draft recipe extracted from a URL — not persisted until user confirms."""
+
+    title: str
+    sourceUrl: str
+    category: str
+    servings: int | None = None
+    ingredients: list[RecipeImportIngredient]
+
+    model_config = {"populate_by_name": True}
