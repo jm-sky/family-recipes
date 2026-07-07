@@ -180,6 +180,7 @@ export const authEn = {
       button: {
         continue_with_google: 'Google',
         continue_with_facebook: 'Facebook',
+        continue_with_github: 'GitHub',
         redirecting: 'Redirecting...',
       },
       or_continue_with: 'Or continue with',

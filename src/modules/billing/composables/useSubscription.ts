@@ -7,10 +7,10 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/vue-query'
 import { isAxiosError } from 'axios'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { useHandleError } from '@/shared/composables/useHandleError'
-import { config } from '@/shared/config/config'
 import { familyQueryKeys } from '@/modules/family/composables/useFamily'
 import { familyService } from '@/modules/family/services/familyService'
+import { useHandleError } from '@/shared/composables/useHandleError'
+import { config } from '@/shared/config/config'
 import type {
   BillingInterval,
   CreateCheckoutSessionRequest,

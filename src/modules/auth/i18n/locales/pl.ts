@@ -180,6 +180,7 @@ export const authPl = {
       button: {
         continue_with_google: 'Google',
         continue_with_facebook: 'Facebook',
+        continue_with_github: 'GitHub',
         redirecting: 'Przekierowywanie...',
       },
       or_continue_with: 'Lub kontynuuj z',
