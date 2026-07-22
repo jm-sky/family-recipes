@@ -29,14 +29,14 @@ const shouldShow = () => {
 </script>
 
 <template>
-  <Alert v-if="shouldShow()" class="border-violet-200 dark:border-violet-800 bg-linear-to-r from-violet-50 to-purple-50 dark:from-violet-950/30 dark:to-purple-950/30">
-    <Sparkles class="size-5 text-violet-600 dark:text-violet-400" />
+  <Alert v-if="shouldShow()" class="border-accent/60 bg-accent/50">
+    <Sparkles class="size-5 text-accent-foreground" />
     <div class="flex flex-1 flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
       <div class="flex-1">
-        <AlertTitle class="text-violet-900 dark:text-violet-100">
+        <AlertTitle class="text-accent-foreground">
           {{ t('billing.upgradeBanner.title', 'Unlock Premium Features') }}
         </AlertTitle>
-        <AlertDescription class="text-violet-700 dark:text-violet-300">
+        <AlertDescription class="text-accent-foreground/80">
           {{ t('billing.upgradeBanner.description', 'Upgrade to Pro for AI-powered recommendations, advanced features, and more storage.') }}
         </AlertDescription>
       </div>
@@ -44,7 +44,7 @@ const shouldShow = () => {
         <ButtonLink
           size="sm"
           variant="default"
-          class="shrink-0 bg-violet-600 hover:bg-violet-700 dark:bg-violet-600 dark:hover:bg-violet-700"
+          class="shrink-0"
           :to="BillingRoutePaths.billing"
         >
           <Sparkles class="size-4" />
@@ -53,7 +53,7 @@ const shouldShow = () => {
         <Button
           size="sm"
           variant="ghost"
-          class="shrink-0 text-violet-700 hover:text-violet-900 dark:text-violet-300 dark:hover:text-violet-100"
+          class="shrink-0 text-accent-foreground hover:text-accent-foreground hover:bg-accent/60"
           @click="dismissBanner"
         >
           <X class="size-4" />

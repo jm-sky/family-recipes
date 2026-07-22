@@ -1,0 +1,42 @@
+.ambient-canvas {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.ambient-blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(100px);
+}
+
+.ambient-blob-peach {
+  top: -8%;
+  right: -6%;
+  width: min(52vw, 28rem);
+  height: min(52vh, 24rem);
+  background: radial-gradient(circle, color-mix(in srgb, var(--color-blush-peach) 55%, transparent) 0%, transparent 72%);
+}
+
+.ambient-blob-stone {
+  bottom: -12%;
+  left: -8%;
+  width: min(48vw, 26rem);
+  height: min(48vh, 22rem);
+  background: radial-gradient(circle, color-mix(in srgb, var(--color-soft-stone) 85%, transparent) 0%, transparent 70%);
+}
+
+.ambient-blob-parchment {
+  top: 35%;
+  left: 30%;
+  width: min(40vw, 20rem);
+  height: min(40vh, 18rem);
+  background: radial-gradient(circle, color-mix(in srgb, var(--color-bone-parchment) 90%, var(--color-blush-peach) 10%) 0%, transparent 68%);
+}
+
+.ambient-content {
+  position: relative;
+  z-index: 1;
+}

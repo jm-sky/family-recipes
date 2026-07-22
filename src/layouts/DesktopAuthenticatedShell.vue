@@ -13,13 +13,22 @@ defineProps<{
 
 <template>
   <SidebarProvider>
-    <AppSidebar class="mt-(--header-height) shadow-[0_0_.6rem_#0002]" />
-    <SidebarInset class="min-w-0 pt-14 bg-background">
-      <div class="flex min-h-screen min-w-0 flex-col bg-muted bg-radial from-card to-muted w-full max-w-full overflow-x-hidden">
+    <AppSidebar class="mt-(--header-height)" />
+    <SidebarInset class="relative bg-background pt-14">
+      <div
+        aria-hidden="true"
+        class="ambient-canvas"
+      >
+        <div class="ambient-blob ambient-blob-peach" />
+        <div class="ambient-blob ambient-blob-stone" />
+        <div class="ambient-blob ambient-blob-parchment" />
+      </div>
+
+      <div class="ambient-content flex min-h-screen w-full max-w-full flex-col overflow-x-hidden">
         <AppHeader />
 
-        <main class="w-full min-w-0 max-w-7xl mx-auto flex-1 py-6 px-2 sm:px-6 lg:px-8">
-          <div :class="cn('border border-border rounded-xl bg-card p-4 sm:p-6 shadow-lg w-full min-w-0 max-w-full', cardClass)">
+        <main class="mx-auto w-full max-w-7xl flex-1 px-2 py-6 sm:px-6 lg:px-8">
+          <div :class="cn('w-full max-w-full rounded-2xl border border-border bg-card p-4 shadow-sm sm:p-6', cardClass)">
             <slot />
           </div>
         </main>

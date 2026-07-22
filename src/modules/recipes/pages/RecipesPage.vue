@@ -32,7 +32,7 @@ async function handleDelete(recipeId: string) {
     <div class="max-w-4xl mx-auto space-y-6">
       <div class="flex items-end justify-between gap-4">
         <div class="space-y-1">
-          <h1 class="text-3xl font-bold tracking-tight">
+          <h1 class="hidden text-page-title md:block">
             {{ t('recipes.list.title') }}
           </h1>
           <p class="text-sm text-muted-foreground">

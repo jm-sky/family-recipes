@@ -5,20 +5,25 @@ import LocaleToggle from '@/shared/i18n/components/LocaleToggle.vue'
 </script>
 
 <template>
-  <div class="min-h-screen flex flex-col bg-linear-to-br from-background to-muted relative">
-    <!-- Fixed controls in top right -->
-    <nav class="fixed top-2 right-2 flex gap-2 rounded-lg p-2 bg-card/50 backdrop-blur-sm z-10">
+  <div class="relative flex min-h-screen flex-col bg-background">
+    <div
+      aria-hidden="true"
+      class="ambient-canvas"
+    >
+      <div class="ambient-blob ambient-blob-peach" />
+      <div class="ambient-blob ambient-blob-stone" />
+      <div class="ambient-blob ambient-blob-parchment" />
+    </div>
+
+    <nav class="fixed top-2 right-2 z-10 flex gap-2 rounded-lg bg-card/60 p-2 backdrop-blur-md">
       <LocaleToggle />
       <DarkModeToggle />
     </nav>
 
-    <!-- Main Content -->
-    <main class="flex-1 flex flex-col items-center justify-center gap-8 p-4">
+    <main class="ambient-content relative z-1 flex flex-1 flex-col items-center justify-center gap-8 p-4">
       <slot />
     </main>
 
-    <!-- Footer -->
-    <AppFooter />
+    <AppFooter class="relative z-1" />
   </div>
 </template>
-

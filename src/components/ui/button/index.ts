@@ -8,15 +8,15 @@ export const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: 'border border-transparent bg-primary text-primary-foreground shadow-xs hover:bg-primary/80',
-        primary: 'border border-transparent bg-primary text-primary-foreground shadow-xs hover:bg-primary/80',
+        default: 'border border-transparent bg-primary text-primary-foreground shadow-xs hover:bg-primary/90',
+        primary: 'border border-transparent bg-primary text-primary-foreground shadow-xs hover:bg-primary/90',
         destructive: 'border border-transparent bg-destructive text-white shadow-xs hover:bg-destructive/90 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40 dark:bg-destructive/60',
         outline: 'text-foreground border border-border/90 bg-background/20 shadow-xs hover:border-accent-foreground/50 hover:bg-accent hover:text-accent-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/50',
-        'outline-primary': 'text-primary border border-primary/90 bg-background/20 shadow-xs hover:border-primary/90 hover:bg-primary hover:text-primary-foreground',
+        'outline-primary': 'text-foreground border border-foreground/90 bg-background/20 shadow-xs hover:border-foreground hover:bg-primary hover:text-primary-foreground',
         'outline-destructive': 'text-destructive border border-destructive/90 bg-background/20 shadow-xs hover:border-destructive/90 hover:bg-destructive/5 hover:text-destructive',
         secondary: 'bg-secondary text-secondary-foreground shadow-xs hover:bg-secondary/80',
         ghost: 'hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent',
-        link: 'text-primary underline-offset-4 hover:underline',
+        link: 'text-foreground underline-offset-4 hover:underline',
       },
       size: {
         default: 'h-9 px-4 py-2 has-[>svg]:px-3',

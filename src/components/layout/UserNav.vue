@@ -119,7 +119,7 @@ const handleLogout = () => {
       </Avatar>
     </DropdownMenuTrigger>
 
-    <DropdownMenuContent class="w-64" align="end">
+    <DropdownMenuContent class="w-64 border-border/60 bg-popover/85 backdrop-blur-md" align="end">
       <!-- User info -->
       <DropdownMenuLabel v-if="isAuthenticated">
         <div class="flex flex-col space-y-1">

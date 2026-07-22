@@ -15,7 +15,7 @@ const { version, buildDate } = useAppVersion()
 </script>
 
 <template>
-  <footer class="border-t bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60 mt-auto">
+  <footer class="mt-auto border-t border-border/50 bg-background/60 backdrop-blur-md supports-backdrop-filter:bg-background/50">
     <div class="mx-auto max-w-screen-2xl px-4 py-6 text-muted-foreground">
       <div class="flex flex-col items-center justify-between gap-4 md:flex-row">
         <div class="text-sm">

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { CookingPot } from 'lucide-vue-next'
 import { cn } from '@/lib/utils'
 import { config } from '@/shared/config/config'
 import type { PrimitiveProps } from 'reka-ui'
@@ -13,7 +14,8 @@ const props = withDefaults(defineProps<{
 </script>
 
 <template>
-  <component :is="props.as" :class="cn('text-2xl font-bold text-transparent bg-clip-text bg-linear-to-r from-primary via-red-700 to-primary', props.class)">
-    {{ config.app.name }}
+  <component :is="props.as" :class="cn('inline-flex items-center gap-1.5 whitespace-nowrap text-2xl font-semibold text-foreground', props.class)">
+    <CookingPot class="size-[1em] shrink-0 text-accent-foreground" aria-hidden="true" />
+    <span>{{ config.app.name }}</span>
   </component>
 </template>

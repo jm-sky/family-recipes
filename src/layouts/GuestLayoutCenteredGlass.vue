@@ -15,18 +15,25 @@ const layoutActionsComponent = route.meta.layoutActionsComponent
 </script>
 
 <template>
-  <div class="min-h-screen bg-linear-to-br from-blue-200 via-slate-100 to-purple-200 dark:from-gray-950 dark:via-gray-800 dark:to-gray-950 flex flex-col relative">
-    <!-- Background image with smooth transitions -->
+  <div class="relative flex min-h-screen flex-col bg-background">
     <div
       v-if="backgroundImage"
       class="absolute inset-0 bg-cover bg-center transition-opacity duration-500"
       :style="{ backgroundImage: `url(${backgroundImage})` }"
     >
-      <div class="absolute inset-0 bg-black/40 dark:bg-black/60 transition-colors duration-500" />
+      <div class="absolute inset-0 bg-black/30 transition-colors duration-500 dark:bg-black/50" />
+    </div>
+    <div
+      v-else
+      aria-hidden="true"
+      class="ambient-canvas"
+    >
+      <div class="ambient-blob ambient-blob-peach" />
+      <div class="ambient-blob ambient-blob-stone" />
+      <div class="ambient-blob ambient-blob-parchment" />
     </div>
 
-    <!-- Fixed floating controls -->
-    <nav class="fixed top-2 right-2 flex gap-2 rounded-lg p-2 bg-card/50 backdrop-blur-sm z-10">
+    <nav class="fixed top-2 right-2 z-10 flex gap-2 rounded-lg bg-card/60 p-2 backdrop-blur-md">
       <slot name="actions">
         <component :is="layoutActionsComponent" v-if="layoutActionsComponent" />
       </slot>
@@ -34,22 +41,18 @@ const layoutActionsComponent = route.meta.layoutActionsComponent
       <DarkModeToggle />
     </nav>
 
-    <!-- Main content -->
-    <main class="flex-1 flex flex-col items-center justify-center py-12 px-4 sm:px-6 lg:px-8 relative z-0">
-      <!-- Logo -->
-      <div class="mx-auto text-center mb-8">
-        <RouterLink :to="{ name: PublicRouteNames.landing }" class="block hover:opacity-80 hover:scale-105 transition-all">
-          <LogoText class="text-3xl drop-shadow" />
+    <main class="ambient-content relative z-1 flex flex-1 flex-col items-center justify-center px-4 py-12 sm:px-6 lg:px-8">
+      <div class="mx-auto mb-8 text-center">
+        <RouterLink :to="{ name: PublicRouteNames.landing }" class="block transition-all hover:opacity-80 hover:scale-105">
+          <LogoText class="text-3xl" />
         </RouterLink>
       </div>
 
-      <!-- Content with glass-morphism -->
-      <div class="w-full max-w-md backdrop-blur-lg bg-white/60 dark:bg-gray-900/60 rounded-2xl shadow-2xl p-8">
+      <div class="w-full max-w-md rounded-2xl border border-border/60 bg-card/85 p-8 shadow-sm backdrop-blur-lg">
         <slot />
       </div>
     </main>
 
-    <!-- Footer -->
-    <GuestLayoutFooter />
+    <GuestLayoutFooter class="relative z-1" />
   </div>
 </template>

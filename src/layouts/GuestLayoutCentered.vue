@@ -12,8 +12,17 @@ const layoutActionsComponent = route.meta.layoutActionsComponent
 </script>
 
 <template>
-  <div class="min-h-screen bg-linear-to-br from-blue-200 via-slate-100 to-purple-200 dark:from-gray-950 dark:via-gray-800 dark:to-gray-950 flex flex-col">
-    <nav class="fixed top-2 right-2 flex gap-2 rounded-lg p-2 bg-card/50 backdrop-blur-sm z-10">
+  <div class="relative flex min-h-screen flex-col bg-background">
+    <div
+      aria-hidden="true"
+      class="ambient-canvas"
+    >
+      <div class="ambient-blob ambient-blob-peach" />
+      <div class="ambient-blob ambient-blob-stone" />
+      <div class="ambient-blob ambient-blob-parchment" />
+    </div>
+
+    <nav class="fixed top-2 right-2 z-10 flex gap-2 rounded-lg bg-card/60 p-2 backdrop-blur-md">
       <slot name="actions">
         <component :is="layoutActionsComponent" v-if="layoutActionsComponent" />
       </slot>
@@ -21,16 +30,16 @@ const layoutActionsComponent = route.meta.layoutActionsComponent
       <DarkModeToggle />
     </nav>
 
-    <main class="flex-1 flex flex-col items-center justify-center py-12 px-4 sm:px-6 lg:px-8 relative z-0">
-      <div class="mx-auto text-center mb-8">
-        <RouterLink :to="{ name: PublicRouteNames.landing }" class="block hover:opacity-80 hover:scale-105 transition-all">
-          <LogoText class="text-3xl drop-shadow" />
+    <main class="ambient-content relative z-1 flex flex-1 flex-col items-center justify-center px-4 py-12 sm:px-6 lg:px-8">
+      <div class="mx-auto mb-8 text-center">
+        <RouterLink :to="{ name: PublicRouteNames.landing }" class="block transition-all hover:opacity-80 hover:scale-105">
+          <LogoText class="text-3xl" />
         </RouterLink>
       </div>
 
       <slot />
     </main>
 
-    <GuestLayoutFooter />
+    <GuestLayoutFooter class="relative z-1" />
   </div>
 </template>

@@ -43,7 +43,7 @@ const emit = defineEmits<{
             v-if="icon"
             :class="cn('size-8 shrink-0 text-primary', iconClass)"
           />
-          <h1 class="text-3xl font-bold tracking-tight">
+          <h1 class="hidden text-page-title md:block">
             {{ label }}
           </h1>
         </div>

@@ -14,9 +14,9 @@ defineProps<{
   <RouterLink
     :to
     :aria-label="ariaLabel"
-    class="relative before:absolute before:-bottom-0.5 before:rounded-md before:h-0.5 before:w-0 before:bg-primary before:transition-all before:duration-300 before:ease-in-out hover:before:w-full hover:text-primary hover:bg-transparent dark:hover:bg-transparent"
-    :active-class="cn('before:w-full text-primary bg-transparent dark:bg-transparent hover:brightness-90 dark:hover:brightness-110', activeClass)"
-    :exact-active-class="cn('before:w-full text-primary bg-transparent dark:bg-transparent hover:brightness-90 dark:hover:brightness-110', exactActiveClass)"
+    class="relative text-foreground/80 transition-colors before:absolute before:-bottom-0.5 before:h-0.5 before:w-0 before:rounded-md before:bg-foreground before:transition-all before:duration-300 before:ease-in-out hover:text-foreground hover:before:w-full"
+    :active-class="cn('before:w-full text-foreground', activeClass)"
+    :exact-active-class="cn('before:w-full text-foreground', exactActiveClass)"
   >
     <slot />
   </RouterLink>

@@ -12,9 +12,9 @@ const props = defineProps<{
 
 <template>
   <div :class="cn('max-w-md w-full space-y-8', props.class)">
-    <div class="space-y-4 bg-card/80 py-8 px-6 shadow-lg rounded-lg">
+    <div class="space-y-4 rounded-2xl border border-border/60 bg-card/85 px-6 py-8 shadow-sm backdrop-blur-lg">
       <slot v-if="withHeader || $slots['header-description']" name="header">
-        <h2 v-if="title" class="text-center text-2xl font-bold text-card-foreground">
+        <h2 v-if="title" class="text-center font-display text-2xl font-normal text-card-foreground">
           {{ title }}
         </h2>
         <slot name="header-description">
