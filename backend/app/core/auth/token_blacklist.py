@@ -145,7 +145,7 @@ class TokenBlacklistService:
         await self.redis.zremrangebyscore(sessions_key, "-inf", now)
 
         sessions = cast(
-            list[tuple[bytes | str, float]],
+            "list[tuple[bytes | str, float]]",
             await self.redis.zrangebyscore(
                 sessions_key,
                 min=now,

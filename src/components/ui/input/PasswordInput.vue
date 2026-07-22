@@ -44,8 +44,8 @@ const showPassword = ref(false)
       :aria-label="showPassword ? 'Hide password' : 'Show password'"
       @click="showPassword = !showPassword"
     >
-      <EyeOffIcon v-if="showPassword" class="size-4" />
-      <EyeIcon v-else class="size-4" />
+      <EyeIcon v-if="showPassword" class="size-4" />
+      <EyeOffIcon v-else class="size-4" />
     </Button>
   </div>
 </template>

@@ -1,7 +1,8 @@
 """Rate limiting configuration."""
 
+from collections.abc import Callable
 from functools import wraps
-from typing import Callable, Any
+from typing import Any
 
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
@@ -27,8 +28,7 @@ def get_client_ip(request: Request) -> str:
     # Check proxy headers first
     forwarded_for = request.headers.get("X-Forwarded-For")
     if forwarded_for:
-        # X-Forwarded-For can contain multiple IPs, take the first one
-        return forwarded_for.split(",")[0].strip()
+        return forwarded_for.split(",")[-1].strip()
 
     real_ip = request.headers.get("X-Real-IP")
     if real_ip:

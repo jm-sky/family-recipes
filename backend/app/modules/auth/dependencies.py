@@ -9,17 +9,17 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from app.core.auth.dependencies import get_token_blacklist_service
 from app.core.auth.token_blacklist import TokenBlacklistService
 
-from .service import AuthService
-from .types.repository import UserRepositoryInterface
 from .auth_utils import verify_token
 from .exceptions import (
     EmailNotVerifiedError,
     ExpiredTokenError,
-    InvalidTokenError,
     InactiveUserError,
+    InvalidTokenError,
 )
 from .models import User
 from .repositories import get_user_repository
+from .service import AuthService
+from .types.repository import UserRepositoryInterface
 
 logger = logging.getLogger(__name__)
 
@@ -29,12 +29,7 @@ security = HTTPBearer()
 # Try to use 2FA-enabled auth service if available
 HAS_2FA = False
 try:
-    from app.modules.two_factor.auth_integration import (
-        AuthServiceWith2FA,
-        get_auth_service_with_2fa,
-    )
     from app.modules.two_factor.repositories import get_two_factor_repository
-    from app.modules.two_factor.types.repository import TwoFactorRepositoryInterface
 
     HAS_2FA = True
 except ImportError:
@@ -188,23 +183,23 @@ async def _verify_user_token(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Token has expired",
             headers={"WWW-Authenticate": "Bearer"},
-        )
+        ) from None
     except InvalidTokenError:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid token",
             headers={"WWW-Authenticate": "Bearer"},
-        )
+        ) from None
     except InactiveUserError:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="User account is inactive",
-        )
+        ) from None
     except EmailNotVerifiedError:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Email verification required",
-        )
+        ) from None
 
 
 # Create get_current_user function with consistent signature

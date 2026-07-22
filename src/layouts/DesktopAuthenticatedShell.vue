@@ -14,12 +14,12 @@ defineProps<{
 <template>
   <SidebarProvider>
     <AppSidebar class="mt-(--header-height) shadow-[0_0_.6rem_#0002]" />
-    <SidebarInset class="pt-14 bg-surface">
-      <div class="flex min-h-screen flex-col bg-muted bg-radial from-card to-slate-300 dark:to-slate-800 w-full max-w-full overflow-x-hidden">
+    <SidebarInset class="min-w-0 pt-14 bg-background">
+      <div class="flex min-h-screen min-w-0 flex-col bg-muted bg-radial from-card to-muted w-full max-w-full overflow-x-hidden">
         <AppHeader />
 
-        <main class="w-full max-w-7xl mx-auto flex-1 py-6 px-2 sm:px-6 lg:px-8">
-          <div :class="cn('border border-border rounded-xl bg-card p-4 sm:p-6 shadow-lg w-full max-w-full', cardClass)">
+        <main class="w-full min-w-0 max-w-7xl mx-auto flex-1 py-6 px-2 sm:px-6 lg:px-8">
+          <div :class="cn('border border-border rounded-xl bg-card p-4 sm:p-6 shadow-lg w-full min-w-0 max-w-full', cardClass)">
             <slot />
           </div>
         </main>

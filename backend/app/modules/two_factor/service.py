@@ -17,8 +17,8 @@ from sqlalchemy import select
 from app.modules.settings.db_models import UserSettingsDB
 
 from .totp_service import TotpService
-from .webauthn_service import WebAuthnService
 from .types.repository import TwoFactorRepositoryInterface
+from .webauthn_service import WebAuthnService
 
 logger = logging.getLogger(__name__)
 
@@ -102,11 +102,12 @@ class TwoFactorService:
 
         This method combines TOTP verification with token generation.
         """
-        from .auth_utils import verify_two_factor_token
         from app.modules.auth.auth_utils import (
             create_access_token,
             create_refresh_token,
         )
+
+        from .auth_utils import verify_two_factor_token
 
         # Verify 2FA token
         payload = verify_two_factor_token(two_factor_token)
@@ -121,8 +122,8 @@ class TwoFactorService:
             raise InvalidTwoFactorCodeError("Invalid verification code")
 
         # Create access and refresh tokens
-        access_token = create_access_token(data={"sub": user_id})
-        refresh_token = create_refresh_token(data={"sub": user_id})
+        access_token = create_access_token(data={"sub": user_id, "tfaVerified": True})
+        refresh_token = create_refresh_token(data={"sub": user_id, "tfaVerified": True})
 
         return {
             "accessToken": access_token,
@@ -172,9 +173,27 @@ class TwoFactorService:
         challenge_token: str,
         credential_json: dict,
         challenge_data: dict | None = None,
+        expected_user_id: str | None = None,
     ) -> dict[str, Any]:
-        """Complete passkey authentication. Delegates to WebAuthnService."""
-        return await self.webauthn.complete_authentication(challenge_token, credential_json, challenge_data)
+        """Complete passkey authentication during login and return JWT tokens."""
+        from app.modules.auth.auth_utils import (
+            create_access_token,
+            create_refresh_token,
+        )
+
+        result = await self.webauthn.complete_authentication(challenge_token, credential_json, challenge_data, expected_user_id)
+        user_id = result["userId"]
+
+        access_token = create_access_token(data={"sub": user_id, "tfaVerified": True})
+        refresh_token = create_refresh_token(data={"sub": user_id, "tfaVerified": True})
+
+        return {
+            "verified": True,
+            "method": "webauthn",
+            "accessToken": access_token,
+            "refreshToken": refresh_token,
+            "tokenType": "bearer",
+        }
 
     # ==================================================================
     # Combined 2FA Methods - use both services

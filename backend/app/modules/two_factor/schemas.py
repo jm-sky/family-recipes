@@ -145,9 +145,16 @@ class InitiatePasskeyAuthenticationResponse(BaseModel):
     expiresAt: datetime
 
 
-class CompletePasskeyAuthenticationRequest(BaseModel):
-    """Request to complete passkey authentication."""
+class InitiatePasskeyAuthenticationRequest(BaseModel):
+    """Request to initiate passkey authentication during login."""
 
+    twoFactorToken: str
+
+
+class CompletePasskeyAuthenticationRequest(BaseModel):
+    """Request to complete passkey authentication during login."""
+
+    twoFactorToken: str
     challengeToken: str
     credential: dict  # PublicKeyCredential from WebAuthn API
 

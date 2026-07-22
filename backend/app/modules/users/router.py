@@ -8,6 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
 from app.core.database import get_db
+from app.modules.admin.authorization import enforce_user_mutation_permissions
 from app.modules.auth.repositories import UserRepository as AuthUserRepository
 from app.modules.auth.repositories import (
     get_user_repository as get_auth_user_repository,
@@ -23,7 +24,6 @@ from .schemas import (
     PublicUserResponse,
     StorageFeatures,
     StorageUsageResponse,
-    UserCreate,
     UserFeatures,
     UserListResponse,
     UserProfileUpdate,
@@ -34,25 +34,9 @@ from .schemas import (
 # Create router
 router = APIRouter()
 
-
-@router.post(
-    "/",
-    response_model=UserResponse,
-    status_code=status.HTTP_201_CREATED,
-    summary="Create new user",
-    description="Create a new user (admin only)",
-)
-async def create_user(
-    user_data: UserCreate,
-    _: AdminUser,
-    repo: Annotated[UserRepository, Depends(get_user_repository)],
-) -> UserResponse:
-    """Create a new user."""
-    try:
-        user = await repo.create_user(email=user_data.email, name=user_data.name, role=user_data.role)
-        return UserResponse(**user.to_response())
-    except UserAlreadyExistsError as e:
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(e)) from e
+# Note: there is intentionally no POST "/" (create user) endpoint here.
+# User creation requires password handling and is only done through the
+# auth module's registration endpoint (POST /auth/register).
 
 
 @router.get(
@@ -256,10 +240,26 @@ async def get_user(
 async def update_user(
     user_id: str,
     user_data: UserUpdate,
-    _: AdminUser,
+    current_user: AdminUser,
     repo: Annotated[UserRepository, Depends(get_user_repository)],
+    auth_repo: Annotated[AuthUserRepository, Depends(get_auth_user_repository)],
 ) -> UserResponse:
     """Update user information."""
+    target_user = await auth_repo.get_user_by_id(user_id)
+    if not target_user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"User {user_id} not found",
+        )
+    enforce_user_mutation_permissions(
+        actor_is_admin=current_user.role in ("admin", "owner"),
+        actor_is_owner=current_user.role == "owner",
+        target_email=target_user.email,
+        target_is_owner=target_user.isOwner,
+        target_is_admin=target_user.isAdmin,
+        new_role=user_data.role,
+        new_is_owner=user_data.isOwner,
+    )
     try:
         user = await repo.update_user(
             user_id=user_id,
@@ -286,10 +286,22 @@ async def update_user(
 )
 async def delete_user(
     user_id: str,
-    _: AdminUser,
+    current_user: AdminUser,
     repo: Annotated[UserRepository, Depends(get_user_repository)],
+    auth_repo: Annotated[AuthUserRepository, Depends(get_auth_user_repository)],
 ) -> MessageResponse:
     """Soft delete user."""
+    target_user = await auth_repo.get_user_by_id(user_id)
+    if not target_user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"User {user_id} not found")
+    enforce_user_mutation_permissions(
+        actor_is_admin=current_user.role in ("admin", "owner"),
+        actor_is_owner=current_user.role == "owner",
+        target_email=target_user.email,
+        target_is_owner=target_user.isOwner,
+        target_is_admin=target_user.isAdmin,
+        is_delete=True,
+    )
     success = await repo.delete_user(user_id)
     if not success:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"User {user_id} not found")
@@ -304,10 +316,23 @@ async def delete_user(
 )
 async def hard_delete_user(
     user_id: str,
-    _: AdminUser,
+    current_user: AdminUser,
     repo: Annotated[UserRepository, Depends(get_user_repository)],
+    auth_repo: Annotated[AuthUserRepository, Depends(get_auth_user_repository)],
 ) -> MessageResponse:
     """Permanently delete user."""
+    target_user = await auth_repo.get_user_by_id(user_id)
+    if not target_user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"User {user_id} not found")
+    enforce_user_mutation_permissions(
+        actor_is_admin=current_user.role in ("admin", "owner"),
+        actor_is_owner=current_user.role == "owner",
+        target_email=target_user.email,
+        target_is_owner=target_user.isOwner,
+        target_is_admin=target_user.isAdmin,
+        is_delete=True,
+        is_hard_delete=True,
+    )
     success = await repo.hard_delete_user(user_id)
     if not success:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"User {user_id} not found")
