@@ -155,10 +155,10 @@ The `scripts/deploy.sh` script performs the following:
    - Remove old files: `sudo rm -rf /var/www/family-recipes/*`
    - Copy new build: `sudo cp -r dist/* /var/www/family-recipes/`
    - Fix ownership: `sudo chown -R caddy:deploy /var/www/family-recipes`
-5. **Restart backend and migrate**
-   - Stop Docker Compose: `docker compose -f docker-compose.dev.yml down`
-   - Start Docker Compose: `docker compose -f docker-compose.dev.yml up -d`
-   - Run migrations: `docker compose -f docker-compose.dev.yml exec app python cli.py db migrate`
+5. **Restart backend and migrate** (from repo root)
+   - Stop Docker Compose: `docker compose down`
+   - Start Docker Compose: `docker compose up -d`
+   - Run migrations: `docker compose exec app python cli.py db migrate`
 
 ## Permission Structure
 
@@ -224,9 +224,9 @@ Both users are in the `docker` group, allowing them to run Docker commands witho
 # Check Caddy status
 sudo systemctl status caddy
 
-# Check backend containers
-cd /home/$USER/projects/family-recipes/backend
-docker compose -f docker-compose.dev.yml ps
+# Check backend containers (from repo root)
+cd /home/$USER/projects/family-recipes
+docker compose ps
 
 # Check deployed frontend
 ls -la /var/www/family-recipes/
@@ -253,7 +253,7 @@ The FastAPI backend also adds cache headers as a fallback, but Caddy configurati
 # Frontend build logs (during manual deployment)
 # Output is shown directly in terminal
 
-# Backend logs
-cd /home/$USER/projects/family-recipes/backend
-docker compose -f docker-compose.dev.yml logs -f
+# Backend logs (from repo root)
+cd /home/$USER/projects/family-recipes
+docker compose logs -f
 ```

@@ -97,7 +97,7 @@ STORAGE_BASE_URL=https://api.family-recipes.dev-made.it
 Po zmianie `.env` przeutwórz kontener backendu (sam `restart` nie przeładowuje env):
 
 ```bash
-docker compose -f backend/docker-compose.dev.yml up -d --force-recreate app
+docker compose up -d --force-recreate app
 ```
 
 ### 4. DNS

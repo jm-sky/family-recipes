@@ -20,10 +20,7 @@ WEBAUTHN_ORIGIN="http://localhost:5176"
 
 ### Docker Compose
 
-Redis jest dostępny we wszystkich konfiguracjach:
-- `docker-compose.yml` - produkcja
-- `docker-compose.dev.yml` - development
-- `docker-compose.dev-minio.yml` - development z MinIO
+Redis jest dostępny w root [`docker-compose.dev.yml`](../docker-compose.dev.yml) (WSL i VPS — volume mounty, hot reload).
 
 ## 🧪 Testowanie
 

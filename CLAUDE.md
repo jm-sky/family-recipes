@@ -40,7 +40,7 @@ Statuses: `todo`, `planned`, `in progress`, `done`, `verification needed`. New i
 | Redis | 6381 |
 | Frontend dev (Vite) | 5177 |
 
-Storage: istniejący **RustFS** (S3-compatible, kontener `rustfs-server:9000` w zewnętrznej sieci `rustfs-network`), bucket `family-recipes`. Nie używamy MinIO ani `docker-compose.dev-minio.yml`.
+Storage: istniejący **RustFS** (S3-compatible, kontener `rustfs-server:9000` w zewnętrznej sieci `rustfs-network`), bucket `family-recipes`. Nie używamy MinIO.
 
 API prefix: `/api` (np. `POST /api/auth/login`). Healthcheck: `GET /health`.
 
@@ -65,8 +65,9 @@ docker run --rm --network=host -v "$PWD":/work -w /work -e CI=1 \
 
 ### Backend (Docker Compose V2 — `docker compose`, nie `docker-compose`)
 ```bash
-docker compose -f backend/docker-compose.dev.yml up -d    # Start
-docker compose -f backend/docker-compose.dev.yml down     # Stop
+# From repo root (compose.yaml → docker-compose.dev.yml, name: family-recipes)
+docker compose up -d
+docker compose down
 docker exec family-recipes-app python cli.py db init      # Inicjalizacja bazy
 docker exec -it family-recipes-app python cli.py users create # Tworzenie użytkownika (interaktywnie)
 docker exec family-recipes-app python cli.py users create --no-input --email user@example.com --name "User" --password "SecurePass123!" # Bez TTY
@@ -75,11 +76,13 @@ docker exec family-recipes-app python -m pytest tests/ -v # Testy backendu
 
 Auto-reload (WatchFiles) jest włączony — restart kontenera potrzebny tylko po zmianie `.env` lub zależności.
 
-**Uwaga na mounty:** do kontenera montowane są `app/`, `scripts/`, `tests/`, `migrations/`, `main.py` (rw) oraz `cli/`, `cli.py` (ro). `pyproject.toml` NIE jest montowany — dlatego black/mypy uruchamiaj z podmontowanym katalogiem:
+**Important:** Run Compose from the **repo root**, not `backend/`. Project name is set via top-level `name: family-recipes`.
+
+**Uwaga na mounty:** do kontenera montowane są `backend/app/`, `scripts/`, `tests/`, `migrations/`, `main.py` (rw) oraz `cli/`, `cli.py` (ro). `pyproject.toml` NIE jest montowany — dlatego black/mypy uruchamiaj z podmontowanym katalogiem:
 
 ```bash
-docker run --rm -v "$PWD/backend":/work -w /work --entrypoint black backend:dev app cli --check
-docker run --rm -v "$PWD/backend":/work -w /work --entrypoint mypy  backend:dev app
+docker run --rm -v "$PWD/backend":/work -w /work --entrypoint black family-recipes-backend:dev app cli --check
+docker run --rm -v "$PWD/backend":/work -w /work --entrypoint mypy  family-recipes-backend:dev app
 ```
 
 ## Quality gates (przed commitem)

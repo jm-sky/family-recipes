@@ -25,7 +25,7 @@ Infrastruktura / shared core — kopiujemy 1:1, tylko rebranding nazw/portów:
 - `backend/app/common/*`, `backend/app/exceptions/*`
 - `backend/cli/*` (zarządzanie bazą, użytkownikami, seed, test)
 - `backend/migrations/*` (baza pod migracje)
-- Docker Compose (`backend/docker-compose.dev.yml` itd.)
+- Docker Compose (`compose.yaml` → `docker-compose.dev.yml` w root)
 - Frontend: `src/shared/*`, `src/components/ui/*`, `src/components/data-table/*`,
   `src/components/layout/*`, `src/layouts/*`, `src/router/*`, `src/i18n/*`,
   konfiguracja PWA (`pwa.config.ts`), Vite/ESLint/TS config.

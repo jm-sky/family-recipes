@@ -145,7 +145,7 @@ docker ps | grep family-recipes-db
 Jeśli nie działa, uruchom:
 ```bash
 cd backend
-docker-compose -f docker-compose.dev.yml up -d db
+docker compose up -d db
 ```
 
 ## Migracja plików (uploads)
