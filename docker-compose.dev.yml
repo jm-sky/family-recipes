@@ -13,7 +13,7 @@ services:
     volumes:
       - family_recipes_postgres_data:/var/lib/postgresql/data
     ports:
-      - "127.0.0.1:${DB_FORWARD_PORT:-5432}:5432"  # Only localhost access
+      - "127.0.0.1:${DB_FORWARD_PORT:-5434}:5432"  # 5434 avoids gear-stack on 5432
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-backend}"]
       interval: 10s
@@ -35,7 +35,7 @@ services:
     environment:
       - REDIS_PASSWORD=${REDIS_PASSWORD:-family-recipes-redis-secret}
     ports:
-      - "127.0.0.1:${REDIS_FORWARD_PORT:-6379}:6379"  # Only localhost access
+      - "127.0.0.1:${REDIS_FORWARD_PORT:-6381}:6379"  # 6381 avoids gear-stack on 6379
     volumes:
       - family_recipes_redis_data:/data
     command: >
@@ -78,12 +78,12 @@ services:
       # Docker-network overrides only
       - ENVIRONMENT=${ENVIRONMENT:-development}
       - PROJECT_NAME=${PROJECT_NAME:-family-recipes}
-      - APP_PORT=${APP_PORT:-8000}
+      - APP_PORT=${APP_PORT:-8002}
       - DATABASE_URL=postgresql+asyncpg://${POSTGRES_USER:-backend}:${POSTGRES_PASSWORD:-family-recipes-db-secret}@db:5432/${POSTGRES_DB:-backend}
       - REDIS_URL=redis://:${REDIS_PASSWORD:-family-recipes-redis-secret}@redis:6379/0
       - LOG_LEVEL=${LOG_LEVEL:-DEBUG}
     ports:
-      - "127.0.0.1:${APP_PORT:-8000}:8000"  # Only localhost access (Caddy proxy)
+      - "127.0.0.1:${APP_PORT:-8002}:8000"  # 8002 avoids gear-stack on 8000
     volumes:
       # Mount source code for hot reload (paths relative to repo root)
       # Using :delegated for better performance on WSL2/macOS
