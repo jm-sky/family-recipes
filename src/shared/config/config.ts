@@ -24,6 +24,8 @@ export const config = {
     id: import.meta.env.VITE_APP_ID ?? 'family-recipes',
     name: import.meta.env.VITE_APP_NAME ?? 'Family Recipes',
     description: import.meta.env.VITE_APP_DESCRIPTION ?? 'Family Recipes for sharing recipes and shopping lists with your family.',
+    // Public repo URL for the footer GitHub link; set to null to hide the link
+    githubUrl: 'https://github.com/jm-sky/family-recipes' as string | null,
   },
   i18n: {
     defaultLocale: (import.meta.env.VITE_DEFAULT_LOCALE ?? 'en') as SupportedLocale,
