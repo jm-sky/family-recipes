@@ -42,9 +42,7 @@ def users_callback(ctx: typer.Context) -> None:
 @users_app.command("create")
 def users_create(
     email: str | None = typer.Option(None, "--email", "-e", help="User email address"),
-    name: str | None = typer.Option(
-        None, "--name", "-n", help="User full name (blank to guess from email)"
-    ),
+    name: str | None = typer.Option(None, "--name", "-n", help="User full name (blank to guess from email)"),
     password: str | None = typer.Option(
         None,
         "--password",
@@ -84,11 +82,7 @@ def users_create(
             --password "SecurePass123!" \\
             --role admin
     """
-    asyncio.run(
-        _users_create_async(
-            email, name, password, role, admin, owner, premium, no_input
-        )
-    )
+    asyncio.run(_users_create_async(email, name, password, role, admin, owner, premium, no_input))
 
 
 async def _users_create_async(
@@ -119,7 +113,7 @@ async def _users_create_async(
         is_admin, is_owner, is_premium = _resolve_role_flags(role, admin, owner, premium)
     except ValueError as e:
         console.print(f"\n[red]Error:[/red] {e}\n")
-        raise typer.Exit(1)
+        raise typer.Exit(1) from None
 
     # Get user details interactively if not provided
     email_value = await _get_email(console, email, no_input)
@@ -160,10 +154,10 @@ async def _users_create_async(
 
     except UserAlreadyExistsError as e:
         console.print(f"\n[red]Error creating user:[/red] {e}\n")
-        raise typer.Exit(1)
+        raise typer.Exit(1) from None
     except Exception as e:
         console.print(f"\n[red]Error creating user:[/red] {e}\n")
-        raise typer.Exit(1)
+        raise typer.Exit(1) from None
 
 
 async def _get_email(console: Any, email: str | None, no_input: bool) -> str:
@@ -188,9 +182,7 @@ async def _get_email(console: Any, email: str | None, no_input: bool) -> str:
         return email_input
 
 
-async def _get_name(
-    console: Any, name: str | None, no_input: bool, email: str | None = None
-) -> str:
+async def _get_name(console: Any, name: str | None, no_input: bool, email: str | None = None) -> str:
     """Get user name (can be blank to guess from email)."""
     if name:
         return name
@@ -199,16 +191,12 @@ async def _get_name(
         raise ValueError("Name is required when --no-input is used")
 
     while True:
-        name_input = Prompt.ask(
-            "[cyan]Full name (blank to guess from email)[/cyan]", default=name or ""
-        )
+        name_input = Prompt.ask("[cyan]Full name (blank to guess from email)[/cyan]", default=name or "")
 
         if not name_input:
             if email:
                 name_from_email = email.split("@")[0]
-                guessed_name = (
-                    name_from_email.replace(".", " ").replace("_", " ").title()
-                )
+                guessed_name = name_from_email.replace(".", " ").replace("_", " ").title()
                 console.print(f"[dim]Using guessed name: {guessed_name}[/dim]")
                 return guessed_name
             console.print("[red]Cannot guess name without email[/red]")
@@ -233,9 +221,7 @@ def _resolve_role_flags(
     if role is not None:
         role_lower = role.lower().strip()
         if role_lower not in valid_roles:
-            raise ValueError(
-                f"Invalid role: {role}. Valid roles are: {', '.join(sorted(valid_roles))}"
-            )
+            raise ValueError(f"Invalid role: {role}. Valid roles are: {', '.join(sorted(valid_roles))}")
         return (
             role_lower == "admin",
             role_lower == "owner",
@@ -549,7 +535,7 @@ async def _users_list_async(
 
     except Exception as e:
         console.print(f"\n[red]Error listing users:[/red] {e}\n")
-        raise typer.Exit(1)
+        raise typer.Exit(1) from None
 
 
 async def _get_users_from_db(detailed: bool = False) -> list[dict[str, Any]]:
@@ -707,7 +693,7 @@ async def _users_delete_async(identifier: str | None, yes: bool, hard: bool) -> 
 
     except Exception as e:
         console.print(f"\n[red]Error deleting user:[/red] {e}\n")
-        raise typer.Exit(1)
+        raise typer.Exit(1) from None
 
 
 async def _find_user(identifier: str) -> dict[str, Any] | None:
@@ -767,6 +753,103 @@ async def _delete_user_from_db(user_id: str, *, hard: bool = False) -> None:
         break
 
 
+@users_app.command("change-password")
+def users_change_password(
+    identifier: str | None = typer.Argument(None, help="User email or ID whose password to change"),
+    password: str | None = typer.Option(
+        None,
+        "--password",
+        help="New password (not recommended, will prompt if not provided)",
+    ),
+    yes: bool = typer.Option(False, "--yes", "-y", help="Skip confirmation prompt"),
+) -> None:
+    """Change a user's password by email or ID (admin override, no current password).
+
+    Examples:
+        # Interactive mode (will prompt for email/ID and new password)
+        python -m cli users change-password
+
+        # Change password by email
+        python -m cli users change-password user@example.com
+
+        # Non-interactive (for scripts)
+        python -m cli users change-password user@example.com \\
+            --password "SecurePass123!" --yes
+    """
+    asyncio.run(_users_change_password_async(identifier, password, yes))
+
+
+async def _users_change_password_async(identifier: str | None, password: str | None, yes: bool) -> None:
+    """Async implementation of password change."""
+    from rich.console import Console
+
+    console = Console()
+
+    try:
+        if not identifier:
+            identifier = Prompt.ask("[cyan]Enter user email or ID[/cyan]")
+
+        with console.status("[bold green]Finding user...", spinner="dots"):
+            user = await _find_user(identifier)
+
+        if not user:
+            console.print(f"\n[red]User not found:[/red] {identifier}\n")
+            return
+
+        console.print("\n[bold cyan]User:[/bold cyan]\n")
+
+        user_info = f"""[bold]ID:[/bold] {user['id']}
+[bold]Email:[/bold] {user['email']}
+[bold]Name:[/bold] {user['name']}
+[bold]Role:[/bold] {'Administrator' if user['isAdmin'] else 'User'}"""
+
+        panel = Panel(user_info, border_style="cyan")
+        console.print(panel)
+
+        password_value = await _get_password(console, password, no_input=False)
+
+        if not yes:
+            if not Confirm.ask(
+                "\nAre you sure you want to change this user's password?",
+                default=False,
+            ):
+                console.print("[yellow]Cancelled[/yellow]")
+                return
+
+        with console.status("[bold green]Updating password...", spinner="dots"):
+            await _change_password_in_db(user["id"], password_value)
+
+        console.print("\n[bold green]✓[/bold green] Password changed successfully\n")
+        console.print("[dim]Existing sessions have been invalidated (token version bumped).[/dim]\n")
+
+    except Exception as e:
+        console.print(f"\n[red]Error changing password:[/red] {e}\n")
+        raise typer.Exit(1) from e
+
+
+async def _change_password_in_db(user_id: str, new_password: str) -> None:
+    """Set a new password for a user and invalidate existing tokens.
+
+    Args:
+        user_id: User ID
+        new_password: New plaintext password (will be hashed)
+    """
+    from app.core.database import get_db
+    from app.modules.auth.repositories import UserRepository
+
+    async for db in get_db():
+        repo = UserRepository(db)
+        user = await repo.get_user_by_id(user_id)
+        if not user:
+            raise ValueError(f"User with id {user_id} not found")
+
+        user.set_password(new_password)
+        user.clear_reset_token()
+        await repo.update_user(user)
+        await repo.increment_token_version(user_id)
+        break
+
+
 @users_app.command("toggle-admin")
 def users_toggle_admin(
     identifier: str | None = typer.Argument(None, help="User email or ID"),
@@ -811,7 +894,7 @@ async def _users_toggle_admin_async(identifier: str | None, yes: bool) -> None:
         action = "promote to administrator" if new_admin_status else "demote to regular user"
 
         # Show user info
-        console.print(f"\n[bold cyan]User to modify:[/bold cyan]\n")
+        console.print("\n[bold cyan]User to modify:[/bold cyan]\n")
 
         user_info = f"""[bold]ID:[/bold] {user['id']}
 [bold]Email:[/bold] {user['email']}
@@ -830,14 +913,14 @@ async def _users_toggle_admin_async(identifier: str | None, yes: bool) -> None:
                 return
 
         # Toggle admin status
-        with console.status(f"[bold green]Updating user...", spinner="dots"):
+        with console.status("[bold green]Updating user...", spinner="dots"):
             await _toggle_admin_in_db(user["id"], new_admin_status)
 
         console.print(f"\n[bold green]✓[/bold green] User {'promoted to administrator' if new_admin_status else 'demoted to regular user'} successfully\n")
 
     except Exception as e:
         console.print(f"\n[red]Error toggling admin status:[/red] {e}\n")
-        raise typer.Exit(1)
+        raise typer.Exit(1) from None
 
 
 async def _toggle_admin_in_db(user_id: str, is_admin: bool) -> None:
@@ -908,7 +991,7 @@ async def _users_toggle_owner_async(identifier: str | None, yes: bool) -> None:
         action = "promote to owner" if new_owner_status else "demote from owner"
 
         # Show user info
-        console.print(f"\n[bold cyan]User to modify:[/bold cyan]\n")
+        console.print("\n[bold cyan]User to modify:[/bold cyan]\n")
 
         current_role = "Owner" if user.get("isOwner") else ("Administrator" if user.get("isAdmin") else ("Premium" if user.get("isPremium") else "User"))
         new_role = "Owner" if new_owner_status else ("Administrator" if user.get("isAdmin") else ("Premium" if user.get("isPremium") else "User"))
@@ -930,7 +1013,7 @@ async def _users_toggle_owner_async(identifier: str | None, yes: bool) -> None:
                 return
 
         # Toggle owner status
-        with console.status(f"[bold green]Updating user...", spinner="dots"):
+        with console.status("[bold green]Updating user...", spinner="dots"):
             await _toggle_owner_in_db(user["id"], new_owner_status)
             await _toggle_admin_in_db(user["id"], new_owner_status)
 
@@ -938,7 +1021,7 @@ async def _users_toggle_owner_async(identifier: str | None, yes: bool) -> None:
 
     except Exception as e:
         console.print(f"\n[red]Error toggling owner status:[/red] {e}\n")
-        raise typer.Exit(1)
+        raise typer.Exit(1) from None
 
 
 async def _toggle_owner_in_db(user_id: str, is_owner: bool) -> None:
@@ -1071,7 +1154,7 @@ async def _users_set_role_async(identifier: str | None, role: str | None, yes: b
         is_premium = role == "premium"
 
         # Show user info
-        console.print(f"\n[bold cyan]User to modify:[/bold cyan]\n")
+        console.print("\n[bold cyan]User to modify:[/bold cyan]\n")
 
         user_info = f"""[bold]ID:[/bold] {user['id']}
 [bold]Email:[/bold] {user['email']}
@@ -1093,14 +1176,14 @@ async def _users_set_role_async(identifier: str | None, role: str | None, yes: b
                 return
 
         # Update role
-        with console.status(f"[bold green]Updating user role...", spinner="dots"):
+        with console.status("[bold green]Updating user role...", spinner="dots"):
             await _set_role_in_db(user["id"], is_admin, is_owner, is_premium)
 
         console.print(f"\n[bold green]✓[/bold green] User role set to {new_role_display} successfully\n")
 
     except Exception as e:
         console.print(f"\n[red]Error setting user role:[/red] {e}\n")
-        raise typer.Exit(1)
+        raise typer.Exit(1) from None
 
 
 async def _set_role_in_db(user_id: str, is_admin: bool, is_owner: bool, is_premium: bool) -> None:
@@ -1291,7 +1374,7 @@ async def _users_verify_email_async(
 
     except Exception as e:
         console.print(f"\n[red]Error managing email verification:[/red] {e}\n")
-        raise typer.Exit(1)
+        raise typer.Exit(1) from None
 
 
 async def _generate_email_verification_link(user_id: str) -> tuple[str, dict[str, Any]]:
