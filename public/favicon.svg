@@ -1,6 +1,14 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
-  <circle cx="16" cy="16" r="15" fill="#E0F2FE"/>
-  <g transform="translate(4, 4)" fill="none" stroke="#0284C7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <style>
+    .fr-bg { fill: #fbe1d1; }
+    .fr-fg { stroke: #5d2a1a; }
+    @media (prefers-color-scheme: dark) {
+      .fr-bg { fill: #3d2a22; }
+      .fr-fg { stroke: #fbe1d1; }
+    }
+  </style>
+  <circle class="fr-bg" cx="16" cy="16" r="15"/>
+  <g class="fr-fg" transform="translate(4, 4)" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
     <path d="M2 12h20"/>
     <path d="M20 12v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-8"/>
     <path d="m4 8 16-4"/>
