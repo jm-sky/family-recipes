@@ -44,6 +44,7 @@ MODEL_MODULES = [
     "app.modules.shopping.db_models",
     "app.modules.ingredients.db_models",
     "app.modules.recipes.db_models",
+    "app.modules.ai.db_models",
     "app.modules.two_factor.db_models",
 ]
 
