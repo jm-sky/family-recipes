@@ -44,7 +44,7 @@ export default defineConfig(({ mode }) => {
       },
     },
     server: {
-      port: envVars.VITE_PORT ? parseInt(envVars.VITE_PORT) : 5177,
+      port: envVars.VITE_PORT ? parseInt(envVars.VITE_PORT) : 5178,
       proxy: {
         '/api': {
           target: envVars.VITE_API_PROXY_URL ?? 'http://localhost:8002',
@@ -59,7 +59,7 @@ export default defineConfig(({ mode }) => {
       chunkSizeWarningLimit: 600,
       sourcemap: true, // Generate source maps to satisfy Lighthouse performance audit
       cssCodeSplit: true, // Split CSS into separate chunks for better caching
-    
+
     },
   }
 })

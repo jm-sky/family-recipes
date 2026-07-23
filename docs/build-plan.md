@@ -55,7 +55,7 @@ Moduły przenoszone jak są (z rebrandingiem):
 | `container` / `gear item` | (brak — domena inna) |
 | kontener `gear-stack-app` | `family-recipes-app` |
 | localStorage `gear-stack:*` | `family-recipes:*` |
-| port dev 5176 | do wyboru (np. 5177) |
+| port dev 5176 | do wyboru (np. 5178) |
 
 ## Nowe moduły domenowe
 

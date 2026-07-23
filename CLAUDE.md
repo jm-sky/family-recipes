@@ -38,7 +38,7 @@ Statuses: `todo`, `planned`, `in progress`, `done`, `verification needed`. New i
 | Backend API (FastAPI) | 8002 |
 | PostgreSQL | 5434 |
 | Redis | 6381 |
-| Frontend dev (Vite) | 5177 |
+| Frontend dev (Vite) | 5178 |
 
 Storage: istniejący **RustFS** (S3-compatible, kontener `rustfs-server:9000` w zewnętrznej sieci `rustfs-network`), bucket `family-recipes`. Nie używamy MinIO.
 
@@ -48,7 +48,7 @@ API prefix: `/api` (np. `POST /api/auth/login`). Healthcheck: `GET /health`.
 
 ### Frontend (pnpm — nigdy npm/yarn)
 ```bash
-pnpm dev              # Dev server (port 5177)
+pnpm dev              # Dev server (port 5178)
 pnpm build            # Production build (type-check + build)
 pnpm type-check       # vue-tsc
 pnpm lint             # ESLint z auto-fix

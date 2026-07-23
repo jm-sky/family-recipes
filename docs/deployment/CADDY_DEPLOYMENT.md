@@ -85,7 +85,7 @@ Po przejściu na domeny produkcyjne ustaw m.in.:
 ENVIRONMENT=production
 DEBUG=false
 
-CORS_ORIGINS=["https://family-recipes.dev-made.it","http://localhost:5177"]
+CORS_ORIGINS=["https://family-recipes.dev-made.it","http://localhost:5178"]
 ALLOWED_HOSTS=["api.family-recipes.dev-made.it","family-recipes.dev-made.it","localhost","127.0.0.1"]
 
 FRONTEND_URL=https://family-recipes.dev-made.it
