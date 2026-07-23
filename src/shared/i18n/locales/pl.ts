@@ -354,6 +354,14 @@ export default {
   dashboard: {
     title: 'Family Recipes',
     subtitle: 'Wspólne listy zakupów i przepisy dla Twojej rodziny',
+    shortcuts: {
+      shopping: 'Zakupy',
+      shoppingDescription: 'Wspólne listy dla rodziny',
+      family: 'Rodzina',
+      familyDescription: 'Członkowie i zaproszenia',
+      recipes: 'Przepisy',
+      recipesDescription: 'Gotujcie i planujcie razem',
+    },
   },
   notFound: {
     title: 'Strona nie została znaleziona',

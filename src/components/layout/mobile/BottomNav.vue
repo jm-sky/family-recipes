@@ -56,20 +56,25 @@ const tabs = computed(() => [
       >
         <a
           :href="href"
-          class="flex min-h-[var(--mobile-touch-min)] min-w-0 flex-1 flex-col items-center justify-center gap-1 px-0.5 text-xs leading-none font-medium transition-colors"
+          class="flex min-h-[var(--mobile-touch-min)] min-w-0 flex-1 flex-col items-center justify-center gap-1 px-0.5 text-xs leading-none transition-colors"
           :class="cn(
             isMobileBottomNavActive(route.path, tab.matchPrefix)
-              ? 'text-primary'
-              : 'text-muted-foreground',
+              ? 'font-semibold text-primary'
+              : 'font-medium text-muted-foreground',
           )"
           @click="navigate"
         >
-          <component
-            :is="tab.icon"
-            class="size-6 shrink-0"
-            stroke-width="1.75"
-            :class="isMobileBottomNavActive(route.path, tab.matchPrefix) ? 'text-primary' : 'text-muted-foreground'"
-          />
+          <span
+            class="flex size-9 items-center justify-center rounded-full transition-colors"
+            :class="isMobileBottomNavActive(route.path, tab.matchPrefix) ? 'bg-primary/15' : ''"
+          >
+            <component
+              :is="tab.icon"
+              class="size-6 shrink-0"
+              :stroke-width="isMobileBottomNavActive(route.path, tab.matchPrefix) ? 2.25 : 1.75"
+              :class="isMobileBottomNavActive(route.path, tab.matchPrefix) ? 'text-primary' : 'text-muted-foreground'"
+            />
+          </span>
           <span class="max-w-full truncate">{{ tab.label }}</span>
         </a>
       </RouterLink>

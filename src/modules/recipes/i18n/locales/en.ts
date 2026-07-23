@@ -14,6 +14,8 @@ export const recipesEn = {
       subtitle: 'Shared recipes for your family',
       create: 'New recipe',
       empty: 'No recipes yet. Add your first one.',
+      emptyTitle: 'No recipes yet',
+      noMatches: 'No recipes match your filters.',
       searchPlaceholder: 'Search recipes…',
       allCategories: 'All categories',
       servings: '{n} servings',

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { BookOpen, Plus, Search, Trash2 } from 'lucide-vue-next'
+import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { RouterLink } from 'vue-router'
 import { Button } from '@/components/ui/button'
@@ -20,6 +21,10 @@ const { recipes, isLoading, categoryFilter, searchQuery, deleteRecipe } = useRec
 
 const ALL_CATEGORIES = '__all__'
 
+const hasActiveFilters = computed(() => Boolean(categoryFilter.value || searchQuery.value.trim()))
+const showToolbar = computed(() => hasActiveFilters.value || (recipes.value?.length ?? 0) > 0)
+const isTrulyEmpty = computed(() => !isLoading.value && !hasActiveFilters.value && (recipes.value?.length ?? 0) === 0)
+
 async function handleDelete(recipeId: string) {
   if (window.confirm(t('recipes.list.deleteConfirm'))) {
     await deleteRecipe(recipeId)
@@ -29,7 +34,7 @@ async function handleDelete(recipeId: string) {
 
 <template>
   <AuthenticatedLayout>
-    <div class="max-w-4xl mx-auto space-y-6">
+    <div class="mx-auto max-w-4xl space-y-6">
       <div class="flex items-end justify-between gap-4">
         <div class="space-y-1">
           <h1 class="hidden text-page-title md:block">
@@ -39,7 +44,7 @@ async function handleDelete(recipeId: string) {
             {{ t('recipes.list.subtitle') }}
           </p>
         </div>
-        <RouterLink :to="{ name: RecipesRouteNames.new }">
+        <RouterLink v-if="!isTrulyEmpty" :to="{ name: RecipesRouteNames.new }">
           <Button>
             <Plus :size="16" />
             {{ t('recipes.list.create') }}
@@ -47,9 +52,9 @@ async function handleDelete(recipeId: string) {
         </RouterLink>
       </div>
 
-      <div class="flex flex-col gap-2 sm:flex-row">
+      <div v-if="showToolbar" class="flex flex-col gap-2 sm:flex-row">
         <div class="relative flex-1">
-          <Search class="absolute left-2.5 top-2.5 size-4 text-muted-foreground" />
+          <Search class="absolute top-2.5 left-2.5 size-4 text-muted-foreground" />
           <Input v-model="searchQuery" class="pl-9" :placeholder="t('recipes.list.searchPlaceholder')" />
         </div>
         <Select
@@ -70,7 +75,7 @@ async function handleDelete(recipeId: string) {
         </Select>
       </div>
 
-      <div v-if="isLoading" class="h-24 w-full bg-muted rounded animate-pulse" />
+      <div v-if="isLoading" class="h-24 w-full animate-pulse rounded bg-muted" />
 
       <div v-else-if="recipes && recipes.length > 0" class="grid gap-3 sm:grid-cols-2">
         <Card v-for="recipe in recipes" :key="recipe.id" class="overflow-hidden">
@@ -82,7 +87,7 @@ async function handleDelete(recipeId: string) {
                   :src="recipe.imageUrl"
                   :alt="recipe.title"
                   class="size-full object-cover"
-                />
+                >
                 <div v-else class="flex size-full items-center justify-center text-muted-foreground">
                   <BookOpen :size="24" />
                 </div>
@@ -104,8 +109,31 @@ async function handleDelete(recipeId: string) {
         </Card>
       </div>
 
+      <div
+        v-else-if="isTrulyEmpty"
+        class="flex flex-col items-center gap-4 rounded-lg border border-dashed px-6 py-12 text-center"
+      >
+        <div class="rounded-full bg-muted p-4 text-muted-foreground">
+          <BookOpen :size="28" />
+        </div>
+        <div class="space-y-1">
+          <p class="font-medium">
+            {{ t('recipes.list.emptyTitle') }}
+          </p>
+          <p class="text-sm text-muted-foreground">
+            {{ t('recipes.list.empty') }}
+          </p>
+        </div>
+        <RouterLink :to="{ name: RecipesRouteNames.new }">
+          <Button>
+            <Plus :size="16" />
+            {{ t('recipes.list.create') }}
+          </Button>
+        </RouterLink>
+      </div>
+
       <p v-else class="text-sm text-muted-foreground">
-        {{ t('recipes.list.empty') }}
+        {{ t('recipes.list.noMatches') }}
       </p>
     </div>
   </AuthenticatedLayout>

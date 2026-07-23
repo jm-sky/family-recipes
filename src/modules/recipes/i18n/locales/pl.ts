@@ -14,6 +14,8 @@ export const recipesPl = {
       subtitle: 'Wspólne przepisy Twojej rodziny',
       create: 'Nowy przepis',
       empty: 'Brak przepisów. Dodaj pierwszy.',
+      emptyTitle: 'Brak przepisów',
+      noMatches: 'Brak przepisów pasujących do filtrów.',
       searchPlaceholder: 'Szukaj przepisów…',
       allCategories: 'Wszystkie kategorie',
       servings: '{n} porcji',

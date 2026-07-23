@@ -150,52 +150,92 @@ function canRemove(member: { userId: string, role: string }): boolean {
             <CardDescription>{{ t('family.members.description') }}</CardDescription>
           </CardHeader>
           <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>{{ t('family.members.name') }}</TableHead>
-                  <TableHead>{{ t('family.members.email') }}</TableHead>
-                  <TableHead>{{ t('family.members.role') }}</TableHead>
-                  <TableHead class="text-right">
-                    {{ t('family.members.remove') }}
-                  </TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                <TableRow v-for="member in members" :key="member.userId">
-                  <TableCell class="font-medium">
+            <!-- Mobile: stacked member cards -->
+            <div class="space-y-2 md:hidden">
+              <div
+                v-for="member in members"
+                :key="member.userId"
+                class="flex items-start justify-between gap-3 rounded-md border p-3"
+              >
+                <div class="min-w-0 flex-1 space-y-1">
+                  <div class="font-medium">
                     {{ member.name }}
                     <span v-if="member.userId === currentUserId" class="text-muted-foreground">
                       ({{ t('family.members.you') }})
                     </span>
-                  </TableCell>
-                  <TableCell class="text-muted-foreground">
+                  </div>
+                  <p class="truncate text-sm text-muted-foreground">
                     {{ member.email }}
-                  </TableCell>
-                  <TableCell>
-                    <Badge :variant="member.role === 'owner' ? 'default' : 'outline'">
-                      {{ t(`family.roles.${member.role}`) }}
-                    </Badge>
-                  </TableCell>
-                  <TableCell class="text-right">
-                    <Button
-                      v-if="canRemove(member)"
-                      variant="outline-destructive"
-                      size="sm"
-                      @click="removeMember(member.userId)"
-                    >
-                      <Trash2 :size="14" />
+                  </p>
+                  <Badge :variant="member.role === 'owner' ? 'default' : 'outline'">
+                    {{ t(`family.roles.${member.role}`) }}
+                  </Badge>
+                </div>
+                <Button
+                  v-if="canRemove(member)"
+                  variant="outline-destructive"
+                  size="icon"
+                  class="size-9 shrink-0"
+                  :aria-label="t('family.members.remove')"
+                  @click="removeMember(member.userId)"
+                >
+                  <Trash2 :size="14" />
+                </Button>
+              </div>
+              <p v-if="!members || members.length === 0" class="text-center text-sm text-muted-foreground">
+                {{ t('family.members.empty') }}
+              </p>
+            </div>
+
+            <!-- Desktop: table -->
+            <div class="hidden md:block">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>{{ t('family.members.name') }}</TableHead>
+                    <TableHead>{{ t('family.members.email') }}</TableHead>
+                    <TableHead>{{ t('family.members.role') }}</TableHead>
+                    <TableHead class="text-right">
                       {{ t('family.members.remove') }}
-                    </Button>
-                  </TableCell>
-                </TableRow>
-                <TableRow v-if="!members || members.length === 0">
-                  <TableCell colspan="4" class="text-center text-muted-foreground">
-                    {{ t('family.members.empty') }}
-                  </TableCell>
-                </TableRow>
-              </TableBody>
-            </Table>
+                    </TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  <TableRow v-for="member in members" :key="member.userId">
+                    <TableCell class="font-medium">
+                      {{ member.name }}
+                      <span v-if="member.userId === currentUserId" class="text-muted-foreground">
+                        ({{ t('family.members.you') }})
+                      </span>
+                    </TableCell>
+                    <TableCell class="text-muted-foreground">
+                      {{ member.email }}
+                    </TableCell>
+                    <TableCell>
+                      <Badge :variant="member.role === 'owner' ? 'default' : 'outline'">
+                        {{ t(`family.roles.${member.role}`) }}
+                      </Badge>
+                    </TableCell>
+                    <TableCell class="text-right">
+                      <Button
+                        v-if="canRemove(member)"
+                        variant="outline-destructive"
+                        size="sm"
+                        @click="removeMember(member.userId)"
+                      >
+                        <Trash2 :size="14" />
+                        {{ t('family.members.remove') }}
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                  <TableRow v-if="!members || members.length === 0">
+                    <TableCell colspan="4" class="text-center text-muted-foreground">
+                      {{ t('family.members.empty') }}
+                    </TableCell>
+                  </TableRow>
+                </TableBody>
+              </Table>
+            </div>
           </CardContent>
         </Card>
 
