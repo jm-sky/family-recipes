@@ -141,7 +141,7 @@ async function handleImport() {
     <div class="max-w-2xl mx-auto space-y-5">
       <RouterLink
         :to="isNew ? RecipesRoutePaths.list : RecipesRoutePaths.detailById(recipeIdParam!)"
-        class="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
+        class="hidden md:inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
       >
         <ArrowLeft :size="16" />
         {{ t('recipes.edit.back') }}
