@@ -23,7 +23,7 @@ const { isAuthenticated } = useAuth()
             <CookingPot class="size-16 text-accent-foreground" />
           </div>
         </div>
-        <h1 class="font-display text-3xl font-normal md:text-4xl">
+        <h1 class="text-page-title md:text-4xl">
           {{ t('dashboard.title', 'Family Recipes') }}
         </h1>
         <p class="text-muted-foreground text-lg max-w-2xl mx-auto">

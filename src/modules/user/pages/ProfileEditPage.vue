@@ -125,7 +125,7 @@ const handleGenerateGravatar = () => {
           </Button>
           <div class="space-y-1">
             <div class="flex items-center gap-2 flex-wrap">
-              <h1 class="text-3xl font-bold tracking-tight">
+              <h1 class="text-page-title">
                 {{ t('user.edit.title') }}
               </h1>
               <UserRoleBadge

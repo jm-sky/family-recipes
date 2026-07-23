@@ -47,7 +47,7 @@ const initials = computed(() => {
       <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div class="space-y-1">
           <div class="flex items-center gap-2 flex-wrap">
-            <h1 class="text-3xl font-bold tracking-tight">
+            <h1 class="text-page-title">
               {{ t('user.profile.title') }}
             </h1>
           </div>

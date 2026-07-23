@@ -32,7 +32,7 @@ if (!config.backend.enabled) {
         <p v-if="isAuthenticated && user" class="text-2xl font-semibold text-muted-foreground">
           {{ t('landing.welcomeBack', { name: user.name }) }}
         </p>
-        <h1 class="text-5xl font-bold tracking-tight">
+        <h1 class="font-display text-5xl font-normal tracking-tight">
           {{ t('landing.title', 'Family Recipes') }}
         </h1>
         <p class="text-xl text-muted-foreground max-w-lg mx-auto">

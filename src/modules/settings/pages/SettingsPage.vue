@@ -14,7 +14,7 @@ const { t } = useI18n()
   <AuthenticatedLayout>
     <div class="max-w-4xl mx-auto space-y-6">
       <div class="space-y-1">
-        <h1 class="text-3xl font-bold tracking-tight">
+        <h1 class="text-page-title">
           {{ t('settings.page.title') }}
         </h1>
         <p class="text-sm text-muted-foreground">

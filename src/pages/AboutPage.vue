@@ -102,7 +102,7 @@ const handleCopy = async () => {
   <AuthenticatedLayout>
     <div class="space-y-8">
       <div class="space-y-2">
-        <h1 class="text-3xl font-bold tracking-tight">
+        <h1 class="text-page-title">
           {{ t('about.title', 'About Family Recipes') }}
         </h1>
         <p class="text-muted-foreground">

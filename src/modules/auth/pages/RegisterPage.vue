@@ -31,7 +31,7 @@ const loginLink = computed(() => {
   <GuestLayoutCentered>
     <div class="max-w-md w-full space-y-8">
       <div>
-        <h2 class="text-center text-3xl font-extrabold text-foreground">
+        <h2 class="text-center font-display text-3xl font-normal text-foreground">
           {{ t('auth.create_account') }}
         </h2>
         <p class="mt-2 text-center text-sm text-muted-foreground">

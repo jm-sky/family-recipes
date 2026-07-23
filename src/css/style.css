@@ -173,6 +173,7 @@
 }
 
 @layer utilities {
+  /* Brand display voice — Source Serif for product name, heroes, and page titles only */
   .font-display {
     font-family: var(--font-serif);
   }

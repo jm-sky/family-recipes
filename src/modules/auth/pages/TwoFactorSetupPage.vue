@@ -54,7 +54,7 @@ const handleDisableTotpSuccess = async () => {
       <div class="space-y-1">
         <div class="flex items-center gap-2 flex-wrap">
           <Shield class="size-6 sm:size-7 shrink-0" />
-          <h1 class="text-2xl sm:text-3xl font-bold tracking-tight">
+          <h1 class="text-page-title text-2xl sm:text-3xl">
             {{ t('auth.two_factor.title') }}
           </h1>
         </div>

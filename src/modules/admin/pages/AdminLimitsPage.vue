@@ -86,7 +86,7 @@ onMounted(() => {
     <div class="space-y-6 w-full max-w-full">
       <!-- Header -->
       <div>
-        <h1 class="text-3xl font-bold tracking-tight flex items-center gap-3">
+        <h1 class="text-page-title flex items-center gap-3">
           <Shield class="size-8 text-primary" />
           {{ t('admin.limits.title', 'Feature Limits') }}
         </h1>

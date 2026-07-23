@@ -96,7 +96,7 @@ onBeforeUnmount(() => {
   <GuestLayoutCentered>
     <div class="max-w-lg w-full space-y-8 text-center bg-card shadow-lg rounded-lg p-8">
       <div class="space-y-2">
-        <h1 class="text-3xl font-bold tracking-tight">
+        <h1 class="font-display text-3xl font-normal tracking-tight">
           {{ t('auth.verify_email.title') }}
         </h1>
         <p class="text-muted-foreground">

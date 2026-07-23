@@ -14,7 +14,7 @@ const props = withDefaults(defineProps<{
 </script>
 
 <template>
-  <component :is="props.as" :class="cn('inline-flex items-center gap-1.5 whitespace-nowrap text-2xl font-semibold text-foreground', props.class)">
+  <component :is="props.as" :class="cn('inline-flex items-center gap-1.5 whitespace-nowrap font-display text-2xl font-normal text-foreground', props.class)">
     <CookingPot class="size-[1em] shrink-0 text-accent-foreground" aria-hidden="true" />
     <span>{{ config.app.name }}</span>
   </component>
