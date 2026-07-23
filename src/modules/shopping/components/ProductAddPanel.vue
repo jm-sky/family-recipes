@@ -18,10 +18,14 @@ import { getCategoryColors } from '@/modules/shopping/utils/categoryColors'
 import { useIsMobile } from '@/shared/composables/useIsMobile'
 import { SHOPPING_ADD_PANEL_EXPANDED_KEY } from '@/shared/config/config'
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   categories: Category[] | undefined
   disabled?: boolean
-}>()
+  /** When true, skip the mobile collapse chrome (e.g. inside a Sheet). */
+  alwaysExpanded?: boolean
+}>(), {
+  alwaysExpanded: false,
+})
 
 const emit = defineEmits<{
   add: [request: CreateItemRequest]
@@ -49,21 +53,28 @@ function saveExpandedToStorage(expanded: boolean) {
   }
 }
 
-const isExpanded = ref(!isMobile.value)
+const isExpanded = ref(!isMobile.value || props.alwaysExpanded)
 
 watch(isMobile, (mobile) => {
+  if (props.alwaysExpanded) {
+    isExpanded.value = true
+    return
+  }
   isExpanded.value = mobile ? readExpandedFromStorage() : true
 }, { immediate: true })
 
 watch(isExpanded, (expanded) => {
-  if (isMobile.value) {
+  if (isMobile.value && !props.alwaysExpanded) {
     saveExpandedToStorage(expanded)
   }
 })
 
 function toggleExpanded() {
+  if (props.alwaysExpanded) return
   isExpanded.value = !isExpanded.value
 }
+
+const showCollapseChrome = computed(() => isMobile.value && !props.alwaysExpanded)
 
 const searchText = ref('')
 const showDetails = ref(false)
@@ -193,9 +204,9 @@ async function handleSubmit() {
 </script>
 
 <template>
-  <div :class="isMobile && !isExpanded ? '' : 'space-y-3'">
+  <div :class="showCollapseChrome && !isExpanded ? '' : 'space-y-3'">
     <button
-      v-if="isMobile && !isExpanded"
+      v-if="showCollapseChrome && !isExpanded"
       type="button"
       class="flex w-full items-center gap-2 text-left text-sm leading-tight font-medium"
       @click="toggleExpanded"
@@ -207,7 +218,7 @@ async function handleSubmit() {
 
     <form v-else class="space-y-3" @submit.prevent="handleSubmit">
       <button
-        v-if="isMobile"
+        v-if="showCollapseChrome"
         type="button"
         class="flex w-full items-center gap-2 text-left text-sm font-medium"
         @click="toggleExpanded"

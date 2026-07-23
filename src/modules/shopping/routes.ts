@@ -22,6 +22,11 @@ export const shoppingRoutes: RouteRecordRaw[] = [
     path: ShoppingRoutePaths.list,
     name: ShoppingRouteNames.list,
     component: () => import('@/modules/shopping/pages/ShoppingListPage.vue'),
-    meta: { layout: 'authenticated', requiresAuth: true, title: 'shopping.lists.title' },
+    meta: {
+      layout: 'authenticated',
+      requiresAuth: true,
+      title: 'shopping.lists.title',
+      backTo: ShoppingRoutePaths.lists,
+    },
   },
 ]

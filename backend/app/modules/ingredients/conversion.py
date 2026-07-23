@@ -52,6 +52,22 @@ class IngredientMatch:
             return quantity * _VOLUME_TO_ML[resolved_unit]
         return None
 
+    def to_preferred(self, quantity_in_base: Decimal) -> tuple[Decimal, str]:
+        """Pick a shopping-friendly unit for a quantity already in base units.
+
+        Large volumes/weights prefer ``l`` / ``kg`` (e.g. 4000 ml → 4 l).
+        """
+        return preferred_metric_unit(self.base_unit, quantity_in_base)
+
+
+def preferred_metric_unit(base_unit: str, quantity_in_base: Decimal) -> tuple[Decimal, str]:
+    """Convert base metric quantity to a friendlier shopping unit when useful."""
+    if base_unit == "ml" and quantity_in_base >= Decimal("1000"):
+        return quantity_in_base / Decimal("1000"), "l"
+    if base_unit == "g" and quantity_in_base >= Decimal("1000"):
+        return quantity_in_base / Decimal("1000"), "kg"
+    return quantity_in_base, base_unit
+
 
 def build_match_terms(name: str, aliases: list[str]) -> set[str]:
     """Build the set of folded terms that identify an ingredient."""

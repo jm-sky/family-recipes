@@ -461,8 +461,7 @@ class ShoppingService:
             existing_base = match.to_base(existing.quantity, existing.unit)
             if existing_base is None:
                 continue  # existing has an unmappable unit -> don't merge into it
-            existing.quantity = existing_base + added_base
-            existing.unit = match.base_unit
+            existing.quantity, existing.unit = match.to_preferred(existing_base + added_base)
             await self.repository.save()
             await self.repository.touch_list(shopping_list)
             return existing

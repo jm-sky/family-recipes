@@ -138,9 +138,27 @@ class TestSummation:
 
         response = await service.add_item("fam1", "list1", "user1", ShoppingItemCreateRequest(name="mąki", quantity=1, unit="kg"))
 
-        assert existing.quantity == Decimal("1500")
-        assert existing.unit == "g"
-        assert response.quantity == 1500.0
+        assert existing.quantity == Decimal("1.5")
+        assert existing.unit == "kg"
+        assert response.quantity == 1.5
+        assert response.unit == "kg"
+
+    @pytest.mark.asyncio
+    async def test_liters_merge_prefers_l_over_ml(self, mock_repository: AsyncMock) -> None:
+        milk = IngredientMatch(ingredient_id="milk", base_unit="ml", unit_to_base={})
+        matcher = _FakeMatcher({"mlek": milk})
+        service = ShoppingService(repository=mock_repository, matcher=matcher)
+
+        mock_repository.get_list.return_value = make_list()
+        existing = make_item(name="mleko", quantity=Decimal("2"), unit="l")
+        mock_repository.find_active_items_by_ingredient.return_value = [existing]
+
+        response = await service.add_item("fam1", "list1", "user1", ShoppingItemCreateRequest(name="mleko", quantity=2, unit="l"))
+
+        assert existing.quantity == Decimal("4")
+        assert existing.unit == "l"
+        assert response.quantity == 4.0
+        assert response.unit == "l"
 
     @pytest.mark.asyncio
     async def test_cup_of_sugar_stays_separate_from_flour(self, mock_repository: AsyncMock) -> None:

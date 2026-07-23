@@ -30,6 +30,7 @@ export default {
     next: 'Następny',
     columns: 'Kolumny',
     open_menu: 'Otwórz menu',
+    undo: 'Cofnij',
     back: 'Wstecz',
     done: 'Gotowe',
     never: 'Nigdy',

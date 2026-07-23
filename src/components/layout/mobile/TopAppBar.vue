@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button'
 import { useAuth } from '@/modules/auth/composables/useAuth'
 import { AuthRouteNames } from '@/modules/auth/config/routes'
 import { useUser } from '@/modules/user/composables/useUser'
+import { mobileAppBarTitle } from '@/shared/composables/useMobileAppBarTitle'
 import { isMobileBottomNavRoot } from '@/shared/config/mobileNav'
 
 defineProps<{
@@ -24,6 +25,7 @@ const { logout, user: authUser } = useAuth()
 const user = computed(() => authUser.value ?? profile.value)
 
 const pageTitle = computed(() => {
+  if (mobileAppBarTitle.value) return mobileAppBarTitle.value
   const metaTitle = route.meta.title as string | undefined
   if (!metaTitle) return ''
   return t(metaTitle)
@@ -32,6 +34,11 @@ const pageTitle = computed(() => {
 const showBack = computed(() => !isMobileBottomNavRoot(route.path))
 
 function handleBack() {
+  const backTo = route.meta.backTo as string | undefined
+  if (backTo) {
+    void router.push(backTo)
+    return
+  }
   router.back()
 }
 

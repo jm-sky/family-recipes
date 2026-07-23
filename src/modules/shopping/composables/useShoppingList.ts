@@ -7,7 +7,7 @@ import { computed, type MaybeRefOrGetter, toValue } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { toast } from 'vue-sonner'
 import { useHandleError } from '@/shared/composables/useHandleError'
-import type { CreateItemRequest, UpdateItemRequest } from '../types'
+import type { CreateItemRequest, ShoppingItem, UpdateItemRequest } from '../types'
 import { shoppingService } from '../services/shoppingService'
 import { shoppingSuggestionKeys } from './useProductSuggestions'
 import { shoppingKeys } from './useShoppingLists'
@@ -31,6 +31,15 @@ export function useShoppingList(listIdRef: MaybeRefOrGetter<string>) {
     await queryClient.invalidateQueries({ queryKey: shoppingSuggestionKeys.all })
   }
 
+  function toCreateRequest(item: ShoppingItem): CreateItemRequest {
+    return {
+      name: item.name,
+      categoryId: item.categoryId,
+      quantity: item.quantity,
+      unit: item.unit,
+    }
+  }
+
   const addItemMutation = useMutation({
     mutationFn: (request: CreateItemRequest) => shoppingService.addItem(listId.value, request),
     onSuccess: invalidate,
@@ -50,9 +59,20 @@ export function useShoppingList(listIdRef: MaybeRefOrGetter<string>) {
   })
 
   const deleteItemMutation = useMutation({
-    mutationFn: (itemId: string) => shoppingService.deleteItem(listId.value, itemId),
-    onSuccess: async () => {
-      toast.success(t('shopping.toasts.itemDeleted'))
+    mutationFn: async (item: ShoppingItem) => {
+      await shoppingService.deleteItem(listId.value, item.id)
+      return item
+    },
+    onSuccess: async (item) => {
+      toast.success(t('shopping.toasts.itemDeleted'), {
+        duration: 6000,
+        action: {
+          label: t('common.undo'),
+          onClick: () => {
+            void addItemMutation.mutateAsync(toCreateRequest(item))
+          },
+        },
+      })
       await invalidate()
     },
     onError: (error) => handleError(error, { fallbackMessage: t('shopping.toasts.itemError') }),
