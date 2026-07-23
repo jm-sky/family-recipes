@@ -8,7 +8,9 @@ import { useI18n } from 'vue-i18n'
 import { toast } from 'vue-sonner'
 import { useHandleError } from '@/shared/composables/useHandleError'
 import type { CreateCategoryRequest, UpdateCategoryRequest } from '../types'
+import { ShoppingRoutePaths } from '../routes'
 import { shoppingService } from '../services/shoppingService'
+import { clearLastShoppingPath, getLastShoppingPath } from '../utils/lastShoppingPath'
 
 export const shoppingKeys = {
   all: ['shopping'] as const,
@@ -47,7 +49,10 @@ export function useShoppingLists() {
 
   const deleteListMutation = useMutation({
     mutationFn: (listId: string) => shoppingService.deleteList(listId),
-    onSuccess: async () => {
+    onSuccess: async (_data, listId) => {
+      if (getLastShoppingPath() === ShoppingRoutePaths.listById(listId)) {
+        clearLastShoppingPath()
+      }
       toast.success(t('shopping.toasts.listDeleted'))
       await invalidateLists()
     },

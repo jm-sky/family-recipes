@@ -15,6 +15,10 @@ import {
   SidebarMenuItem,
   SidebarRail,
 } from '@/components/ui/sidebar'
+import { AuthRoutePaths } from '@/modules/auth/config/routes'
+import { FamilyRoutePaths } from '@/modules/family/routes'
+import { RecipesRoutePaths } from '@/modules/recipes/routes'
+import { getLastShoppingPath } from '@/modules/shopping/utils/lastShoppingPath'
 import { PublicRoutePaths } from '@/router/publicRoutes'
 
 const { t } = useI18n()
@@ -22,22 +26,22 @@ const { t } = useI18n()
 // Main navigation links (shopping lists and recipes modules plug in here)
 const mainLinks = computed(() => [
   {
-    to: '/dashboard',
+    to: AuthRoutePaths.dashboard,
     label: t('navigation.dashboard', 'Dashboard'),
     icon: LayoutDashboard,
   },
   {
-    to: '/family',
+    to: FamilyRoutePaths.family,
     label: t('family.nav.title', 'Family'),
     icon: Users,
   },
   {
-    to: '/recipes',
+    to: RecipesRoutePaths.list,
     label: t('recipes.nav.title', 'Recipes'),
     icon: BookOpen,
   },
   {
-    to: '/shopping',
+    to: getLastShoppingPath(),
     label: t('shopping.nav.title', 'Shopping'),
     icon: ShoppingCart,
   },

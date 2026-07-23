@@ -1,8 +1,9 @@
 <script setup lang="ts">
+import { HttpStatusCode, isAxiosError } from 'axios'
 import { ArrowLeft, Folders, Minus, Plus, Search } from 'lucide-vue-next'
 import { computed, reactive, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { RouterLink, useRoute } from 'vue-router'
+import { RouterLink, useRoute, useRouter } from 'vue-router'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Checkbox } from '@/components/ui/checkbox'
@@ -26,6 +27,7 @@ import { useShoppingList } from '@/modules/shopping/composables/useShoppingList'
 import { useShoppingLists } from '@/modules/shopping/composables/useShoppingLists'
 import { ShoppingRoutePaths } from '@/modules/shopping/routes'
 import { formatItemQuantity, toPreferredDisplayUnit } from '@/modules/shopping/utils/formatQuantity'
+import { clearLastShoppingPath } from '@/modules/shopping/utils/lastShoppingPath'
 import { useIsMobile } from '@/shared/composables/useIsMobile'
 import { useMobileAppBarTitle } from '@/shared/composables/useMobileAppBarTitle'
 import {
@@ -38,11 +40,23 @@ type ListSort = 'category' | 'name' | 'uncheckedFirst'
 
 const { t, locale } = useI18n()
 const route = useRoute()
+const router = useRouter()
 const isMobile = useIsMobile()
 
 const listId = computed(() => String(route.params.listId ?? ''))
 const { categories } = useShoppingLists()
-const { list, isLoading, addItem, quickAdd, isAddingItem, toggleItem, updateItem, deleteItem } = useShoppingList(listId)
+const { list, isLoading, error, addItem, quickAdd, isAddingItem, toggleItem, updateItem, deleteItem } = useShoppingList(listId)
+
+watch(
+  error,
+  (err) => {
+    if (isAxiosError(err) && err.response?.status === HttpStatusCode.NotFound) {
+      clearLastShoppingPath()
+      void router.replace(ShoppingRoutePaths.lists)
+    }
+  },
+  { immediate: true },
+)
 
 useMobileAppBarTitle(computed(() => (isMobile.value ? list.value?.name ?? null : null)))
 

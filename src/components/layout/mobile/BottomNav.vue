@@ -8,6 +8,7 @@ import { AuthRoutePaths } from '@/modules/auth/config/routes'
 import { FamilyRoutePaths } from '@/modules/family/routes'
 import { RecipesRoutePaths } from '@/modules/recipes/routes'
 import { ShoppingRoutePaths } from '@/modules/shopping/routes'
+import { getLastShoppingPath } from '@/modules/shopping/utils/lastShoppingPath'
 import { isMobileBottomNavActive } from '@/shared/config/mobileNav'
 
 const { t } = useI18n()
@@ -33,7 +34,7 @@ const tabs = computed(() => [
     icon: BookOpen,
   },
   {
-    to: ShoppingRoutePaths.lists,
+    to: getLastShoppingPath(),
     matchPrefix: ShoppingRoutePaths.lists,
     label: t('shopping.nav.title', 'Shopping'),
     icon: ShoppingCart,

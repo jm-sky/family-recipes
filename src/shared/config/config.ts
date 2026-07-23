@@ -100,3 +100,4 @@ export const USER_STORAGE_KEY = `${config.app.id}:user`
 export const SHOPPING_ADD_PANEL_EXPANDED_KEY = `${config.app.id}:shopping:add-panel-expanded`
 export const SHOPPING_LIST_GROUP_BY_CATEGORY_KEY = `${config.app.id}:shopping:group-by-category`
 export const SHOPPING_LIST_SORT_KEY = `${config.app.id}:shopping:list-sort`
+export const SHOPPING_LAST_PATH_KEY = `${config.app.id}:shopping:last-path`

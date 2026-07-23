@@ -3,6 +3,8 @@ import { createRouter, createWebHistory } from 'vue-router'
 import { i18n } from '@/i18n'
 import { protectAdminRoutes } from '@/modules/admin/guards/adminGuard'
 import { protectRoutes } from '@/modules/auth/guards/authGuard'
+import { ShoppingRouteNames, ShoppingRoutePaths } from '@/modules/shopping/routes'
+import { setLastShoppingPath } from '@/modules/shopping/utils/lastShoppingPath'
 import { config } from '@/shared/config/config'
 import { routes } from './routes'
 
@@ -42,8 +44,16 @@ protectRoutes(router)
 // Install admin guard (checks admin access after auth)
 protectAdminRoutes(router)
 
-// Set page title on route change
+// Set page title on route change; remember last shopping path for nav
 router.afterEach((to) => {
+  if (to.name === ShoppingRouteNames.list) {
+    const listId = String(to.params.listId ?? '')
+    if (listId) setLastShoppingPath(ShoppingRoutePaths.listById(listId))
+  }
+  else if (to.name === ShoppingRouteNames.lists) {
+    setLastShoppingPath(ShoppingRoutePaths.lists)
+  }
+
   if (typeof document === 'undefined') return
 
   const metaTitle = to.meta.title as string | undefined
