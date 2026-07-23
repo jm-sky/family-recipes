@@ -23,6 +23,7 @@
   --color-ashen: #7b7974;
   --color-blush-peach: #fbe1d1;
   --color-sienna-brown: #5d2a1a;
+  --color-mocha: #5c4339;
 
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -76,6 +77,7 @@
   --color-ashen: #7b7974;
   --color-blush-peach: #fbe1d1;
   --color-sienna-brown: #5d2a1a;
+  --color-mocha: #5c4339;
 
   --background: var(--color-bone-parchment);
   --foreground: var(--color-carbon-ink);
@@ -84,7 +86,7 @@
   --card-foreground: var(--color-carbon-ink);
   --popover: var(--color-paper-white);
   --popover-foreground: var(--color-carbon-ink);
-  --primary: #17191c;
+  --primary: var(--color-mocha);
   --primary-foreground: var(--color-bone-parchment);
   --primary-light: var(--color-blush-peach);
 
@@ -106,7 +108,7 @@
   --chart-5: #373734;
   --sidebar: oklch(0.99 0.003 80 / 0.72);
   --sidebar-foreground: var(--color-carbon-ink);
-  --sidebar-primary: var(--color-carbon-ink);
+  --sidebar-primary: var(--color-mocha);
   --sidebar-primary-foreground: var(--color-bone-parchment);
   --sidebar-accent: color-mix(in srgb, var(--color-blush-peach) 45%, transparent);
   --sidebar-accent-foreground: var(--color-carbon-ink);
@@ -122,8 +124,8 @@
   --card-foreground: #f8f8f6;
   --popover: #2a2826;
   --popover-foreground: #f8f8f6;
-  --primary: #f8f8f6;
-  --primary-foreground: #17191c;
+  --primary: var(--color-blush-peach);
+  --primary-foreground: var(--color-mocha);
   --primary-light: #3d2a22;
 
   --secondary: #2e2c29;
@@ -144,8 +146,8 @@
   --chart-5: #e7e6e1;
   --sidebar: oklch(0.14 0.01 50 / 0.65);
   --sidebar-foreground: #f8f8f6;
-  --sidebar-primary: #f8f8f6;
-  --sidebar-primary-foreground: #17191c;
+  --sidebar-primary: var(--color-blush-peach);
+  --sidebar-primary-foreground: var(--color-mocha);
   --sidebar-accent: color-mix(in srgb, var(--color-blush-peach) 18%, transparent);
   --sidebar-accent-foreground: #f8f8f6;
   --sidebar-border: oklch(1 0 0 / 10%);

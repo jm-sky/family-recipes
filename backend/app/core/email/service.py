@@ -35,8 +35,8 @@ class EmailService:
             loader=FileSystemLoader(str(self.templates_dir)),
             autoescape=select_autoescape(["html", "xml"]),
         )
-        # Primary color from frontend: oklch(0.588 0.158 242) converted to hex for email compatibility
-        self.primary_color = "#0284c7"
+        # Brand primary from frontend (--color-mocha / --primary)
+        self.primary_color = "#5c4339"
 
     def _render_translation(self, translations: dict[str, object], key: str, context: dict[str, object]) -> str:
         """Render a translation string with context variables.
