@@ -329,9 +329,11 @@ async function handleImport() {
           </CardContent>
         </Card>
 
-        <Button type="submit" :disabled="isSaving || !title.trim()">
-          {{ isSaving ? t('recipes.edit.saving') : t('recipes.edit.save') }}
-        </Button>
+        <div class="flex justify-end">
+          <Button type="submit" :disabled="isSaving || !title.trim()">
+            {{ isSaving ? t('recipes.edit.saving') : t('recipes.edit.save') }}
+          </Button>
+        </div>
       </form>
     </div>
   </AuthenticatedLayout>
