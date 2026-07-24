@@ -14,6 +14,7 @@ from fastapi import status
 from fastapi.testclient import TestClient
 
 from app.core.auth.dependencies import get_token_blacklist_service
+from app.core.csrf import CSRF_COOKIE_NAME, CSRF_HEADER_NAME
 from app.modules.auth.auth_utils import create_refresh_token
 from app.modules.auth.dependencies import get_auth_service, get_current_token, get_current_user
 from app.modules.auth.models import User
@@ -22,6 +23,13 @@ from app.modules.auth.service import AuthService
 from main import app
 
 REFRESH_COOKIE_NAME = "refresh_token"
+
+
+def _csrf_headers(client: TestClient) -> dict[str, str]:
+    response = client.get("/api/auth/csrf-token")
+    assert response.status_code == status.HTTP_200_OK
+    token = response.cookies.get(CSRF_COOKIE_NAME) or response.json()["csrf_token"]
+    return {CSRF_HEADER_NAME: token}
 
 
 @pytest.fixture
@@ -70,7 +78,11 @@ class TestLoginSetsRefreshCookie:
         fake_service.login_user.return_value = sample_login_response
         app.dependency_overrides[get_auth_service] = lambda: fake_service
 
-        response = client.post("/api/auth/login", json={"email": "test@example.com", "password": "password123"})
+        response = client.post(
+            "/api/auth/login",
+            json={"email": "test@example.com", "password": "password123"},
+            headers=_csrf_headers(client),
+        )
 
         assert response.status_code == status.HTTP_200_OK
         assert "refreshToken" not in response.json()
@@ -85,7 +97,7 @@ class TestLoginSetsRefreshCookie:
 
 class TestRefreshEndpointUsesCookie:
     def test_refresh_without_cookie_is_rejected(self, client: TestClient) -> None:
-        response = client.post("/api/auth/refresh")
+        response = client.post("/api/auth/refresh", headers=_csrf_headers(client))
         assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
     def test_refresh_reads_cookie_and_rotates_it(self, client: TestClient, sample_user: User) -> None:
@@ -100,8 +112,9 @@ class TestRefreshEndpointUsesCookie:
         }
         app.dependency_overrides[get_auth_service] = lambda: fake_service
 
+        headers = _csrf_headers(client)
         client.cookies.set(REFRESH_COOKIE_NAME, refresh_token, path="/api/auth")
-        response = client.post("/api/auth/refresh")
+        response = client.post("/api/auth/refresh", headers=headers)
 
         assert response.status_code == status.HTTP_200_OK
         assert "refreshToken" not in response.json()
@@ -124,8 +137,10 @@ class TestLogoutClearsCookie:
         fake_blacklist = AsyncMock()
         app.dependency_overrides[get_token_blacklist_service] = lambda: fake_blacklist
 
+        headers = _csrf_headers(client)
+        headers["Authorization"] = f"Bearer {access_token}"
         client.cookies.set(REFRESH_COOKIE_NAME, "some-refresh-token", path="/api/auth")
-        response = client.post("/api/auth/logout", headers={"Authorization": f"Bearer {access_token}"})
+        response = client.post("/api/auth/logout", headers=headers)
 
         assert response.status_code == status.HTTP_200_OK
         fake_blacklist.blacklist_token.assert_awaited_once()
