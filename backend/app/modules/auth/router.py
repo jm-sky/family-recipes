@@ -15,13 +15,12 @@ To disable rate limiting (NOT recommended):
 """
 
 import logging
-from secrets import token_urlsafe
 from typing import TYPE_CHECKING, Annotated, Any, TypeAlias, Union, cast
 
 from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.csrf import CSRF_COOKIE_NAME, set_csrf_cookie
+from app.core.csrf import CSRF_COOKIE_NAME
 from app.core.database import get_db
 from app.core.email.i18n import determine_email_locale, get_translations
 
@@ -88,12 +87,9 @@ router = APIRouter()
     description="Ensure a CSRF cookie is set and return its value for the X-CSRF-Token header",
     tags=["Authentication"],
 )
-async def get_csrf_token(request: Request, response: Response) -> dict[str, str]:
-    """Return the double-submit CSRF token (sets cookie if missing)."""
-    token = request.cookies.get(CSRF_COOKIE_NAME)
-    if not token:
-        token = token_urlsafe(32)
-        set_csrf_cookie(response, token)
+async def get_csrf_token(request: Request) -> dict[str, str]:
+    """Return the double-submit CSRF token (CSRFMiddleware issues the cookie if missing)."""
+    token = request.cookies.get(CSRF_COOKIE_NAME) or request.state.csrf_token
     return {"csrf_token": token}
 
 
