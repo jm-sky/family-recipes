@@ -6,7 +6,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
-from app.modules.ai.dependencies import AdminUser
+from app.modules.ai.dependencies import AiAccessUser
 from app.modules.ai.repositories import HistoryRepository
 from app.modules.ai.schemas import AiHistoryDetail, AiHistoryListResponse
 from app.modules.ai.services import HistoryService
@@ -29,7 +29,7 @@ def get_history_service(db: AsyncSession = Depends(get_db)) -> HistoryService:
 
 @router.get("", response_model=AiHistoryListResponse)
 async def get_history(
-    current_user: AdminUser,
+    current_user: AiAccessUser,
     service: HistoryService = Depends(get_history_service),
     limit: int = Query(50, ge=1, le=100),
     offset: int = Query(0, ge=0),
@@ -37,7 +37,7 @@ async def get_history(
 ) -> AiHistoryListResponse:
     """Get AI history list for current user.
 
-    Requires admin access.
+    Requires Premium/admin/owner or a configured own OpenRouter token.
 
     Args:
         limit: Maximum number of items
@@ -58,12 +58,12 @@ async def get_history(
 @router.get("/{history_id}", response_model=AiHistoryDetail)
 async def get_history_detail(
     history_id: UUID,
-    current_user: AdminUser,
+    current_user: AiAccessUser,
     service: HistoryService = Depends(get_history_service),
 ) -> AiHistoryDetail:
     """Get AI history entry detail.
 
-    Requires admin access.
+    Requires Premium/admin/owner or a configured own OpenRouter token.
 
     Args:
         history_id: History entry ID
@@ -83,12 +83,12 @@ async def get_history_detail(
 @router.delete("/{history_id}")
 async def delete_history_entry(
     history_id: UUID,
-    current_user: AdminUser,
+    current_user: AiAccessUser,
     service: HistoryService = Depends(get_history_service),
 ) -> dict[str, str]:
     """Delete AI history entry.
 
-    Requires admin access.
+    Requires Premium/admin/owner or a configured own OpenRouter token.
 
     Args:
         history_id: History entry ID
@@ -107,12 +107,12 @@ async def delete_history_entry(
 
 @router.delete("")
 async def clear_history(
-    current_user: AdminUser,
+    current_user: AiAccessUser,
     service: HistoryService = Depends(get_history_service),
 ) -> dict[str, str]:
     """Clear all AI history for current user.
 
-    Requires admin access.
+    Requires Premium/admin/owner or a configured own OpenRouter token.
 
     Returns:
         Success message with count

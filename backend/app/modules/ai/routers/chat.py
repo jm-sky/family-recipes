@@ -5,7 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
 from app.modules.ai.cache.postgres_cache import PostgresCacheService
-from app.modules.ai.dependencies import AdminUser
+from app.modules.ai.dependencies import AiAccessUser
 from app.modules.ai.repositories import HistoryRepository, SettingsRepository
 from app.modules.ai.schemas import AiChatRequest, AiChatResponse
 from app.modules.ai.services import ChatService, SettingsService
@@ -39,12 +39,12 @@ def get_chat_service(db: AsyncSession = Depends(get_db)) -> ChatService:
 @router.post("", response_model=AiChatResponse)
 async def chat(
     request: AiChatRequest,
-    current_user: AdminUser,
+    current_user: AiAccessUser,
     service: ChatService = Depends(get_chat_service),
 ) -> AiChatResponse:
     """Send message to AI and get response.
 
-    Requires admin access.
+    Requires Premium/admin/owner or a configured own OpenRouter token.
 
     This endpoint:
     - Uses user's settings (model, temperature, etc.)

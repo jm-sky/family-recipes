@@ -4,7 +4,6 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
-from app.modules.ai.dependencies import AdminUser
 from app.modules.ai.repositories import SettingsRepository
 from app.modules.ai.schemas import (
     AiSetTokenRequest,

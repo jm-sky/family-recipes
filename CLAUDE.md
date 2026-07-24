@@ -106,12 +106,14 @@ Vue 3.5 `<script setup>` + TypeScript strict + Pinia + TanStack Query + Tailwind
 
 ## Feature flags (stan MVP)
 
-- `AI_ENABLED=false` / `VITE_ENABLE_AI=false` — moduł AI jest szkieletem
+- `AI_ENABLED` / `VITE_ENABLE_AI` — włączają AI (import przepisów z URL + chat/settings); lokalnie zwykle `true`
 - `STRIPE_ENABLED=false` — billing wyłączony (plany enforce'owane lokalnie: free/basic/pro)
 - `EMAIL_ENABLED=false`, `EMAIL_ADAPTER=file` — maile do pliku w dev
 
 ## Build status (Fazy z build-plan.md)
 
 - Faza 0 (bootstrap/rebranding): ukończona
-- Faza 1 (Family), Faza 2 (Shopping), Faza 3 (Ingredients + sumowanie jednostek): w toku
-- Fazy 4–6 (Recipes, AI import, sync/search): poza zakresem obecnego MVP
+- Faza 1 (Family), Faza 2 (Shopping), Faza 3 (Ingredients + sumowanie jednostek): w toku / częściowo
+- Faza 4 (Recipes): zaimplementowana
+- Faza 5 (AI import przepisów z URL): zaimplementowana (dostęp: Premium/admin/owner lub własny token OpenRouter)
+- Faza 6 (sync/search): poza zakresem obecnego MVP

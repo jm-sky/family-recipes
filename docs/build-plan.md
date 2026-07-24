@@ -33,8 +33,8 @@ Infrastruktura / shared core — kopiujemy 1:1, tylko rebranding nazw/portów:
 Moduły przenoszone jak są (z rebrandingiem):
 - `auth` (email+hasło, WebAuthn/passkeys, JWT), `users`, `two_factor`,
   OAuth Google, `settings`, `admin`, `stats`, `logs`, `feature_limits`.
-- `ai` — **zostaje szkielet** (OpenRouter provider, cache, router), ale zawartość
-  domenowa (prompty/parsery gear) → wymieniana na import przepisów.
+- `ai` — OpenRouter (provider, cache, settings/history) + **import przepisu z URL**
+  (`POST /ai/recipes/import`); dostęp: Premium/admin/owner lub własny token OpenRouter.
 - `billing` — zostaje, **disabled** feature flagą (README sekcja 12).
 
 ## Co z gear-stack ZNIKA / zostaje wymienione
@@ -115,15 +115,17 @@ konwersjami (szklanka/łyżka/łyżeczka → g/ml). AI może dosilać dataset.
 - Kryterium: dwukrotne dodanie „szklanka mąki" + „130 g mąki" = jedna pozycja;
   „szklanka cukru" osobno od „szklanka mąki".
 
-**Faza 4 — Przepisy**
+**Faza 4 — Przepisy** ✅
 - Moduł `recipes`: CRUD, kategorie (śniadania/obiady/kolacje/desery), tagi,
   składniki+porcje, `source_url`, upload zdjęcia (storage adapter).
 - „Dodaj do listy" (all/missing).
 - Kryterium: przepis z zdjęciem i składnikami; jednym klikiem na listę.
 
-**Faza 5 — AI import przepisu z linku**
+**Faza 5 — AI import przepisu z linku** ✅
 - Rozszerz `ai`: `POST /ai/recipes/import` (OpenRouter) → draft z rozpoznanymi
   składnikami/jednostkami, normalizacja, dopasowanie do datasetu.
+- Dostęp: użytkownik Premium/admin/owner **lub** skonfigurowany własny token OpenRouter
+  (`require_ai_access` / `AiAccessUser`).
 - Kryterium: wklejenie linku → wypełniony formularz przepisu do potwierdzenia.
 
 **Faza 6 — Offline / sync + search**

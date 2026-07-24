@@ -2,7 +2,6 @@
 
 from fastapi import APIRouter
 
-from app.modules.ai.dependencies import AdminUser
 from app.modules.ai.schemas import AiModel, AiModelsResponse
 from app.modules.ai.utils.models_config import MODELS
 from app.modules.auth.dependencies import CurrentUser

@@ -27,10 +27,8 @@ async def health_check() -> dict[str, str]:
 async def get_ai_status() -> dict[str, bool]:
     """Get AI module status.
 
-    Requires admin access.
-
     Returns:
-        Dict with AI module status
+        Dict with AI module status (feature flags; no auth gate).
     """
     from app.core.config import settings
 

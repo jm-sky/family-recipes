@@ -72,7 +72,9 @@ powtarzane — patrz gear-stack.
 - Import zwraca **draft** do potwierdzenia/edycji przez użytkownika przed
   zapisem (`POST /api/recipes`). Rozpoznawanie składników i jednostek +
   normalizacja + próba dopasowania do `Ingredient` datasetu.
-- Architektura AI gotowa na Fazę 2 (sugestie posiłków — poza MVP).
+- **Dostęp:** Premium / admin / owner **lub** własny token OpenRouter w ustawieniach AI
+  (403 bez jednego z tych). Feature flagi: `AI_ENABLED` / `VITE_ENABLE_AI`.
+- Status: **zaimplementowane** (Faza 5). Chat/settings/history AI też dostępne pod tym samym gate'em.
 
 ## Search
 

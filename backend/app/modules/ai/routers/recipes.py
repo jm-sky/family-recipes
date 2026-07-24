@@ -8,7 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.config import settings
 from app.core.database import get_db
 from app.modules.ai.cache.postgres_cache import PostgresCacheService
-from app.modules.ai.dependencies import AdminUser
+from app.modules.ai.dependencies import AiAccessUser
 from app.modules.ai.exceptions import RecipeImportError, StructuredOutputParsingError
 from app.modules.ai.repositories import HistoryRepository, SettingsRepository
 from app.modules.ai.schemas import RecipeImportRequest, RecipeImportResponse
@@ -49,7 +49,7 @@ RecipeImportServiceDep = Annotated[RecipeImportService, Depends(get_recipe_impor
 @router.post("/import", response_model=RecipeImportResponse, dependencies=[Depends(require_ai_enabled)])
 async def import_recipe(
     payload: RecipeImportRequest,
-    current_user: AdminUser,
+    current_user: AiAccessUser,
     service: RecipeImportServiceDep,
 ) -> RecipeImportResponse:
     """Import a recipe draft from an external URL (does not persist)."""

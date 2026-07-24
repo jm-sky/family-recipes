@@ -38,7 +38,7 @@ class ModelNotAvailableError(AIError):
 
 
 class AdminRequiredError(AIError):
-    """Raised when non-admin user tries to access AI features."""
+    """Raised when a user lacks AI access (legacy name; prefer HTTP 403 from require_ai_access)."""
 
     pass
 
