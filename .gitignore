@@ -40,8 +40,7 @@ __screenshots__/
 .env.*.local
 test-results/
 
-# Database backups
-backups/
+# Database backups (local dumps — .backups/ at repo root; do not use backups/)
 .backups/
 *.sql
 playwright-report/*
