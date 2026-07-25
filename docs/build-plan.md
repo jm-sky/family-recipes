@@ -121,12 +121,14 @@ konwersjami (szklanka/łyżka/łyżeczka → g/ml). AI może dosilać dataset.
 - „Dodaj do listy" (all/missing).
 - Kryterium: przepis z zdjęciem i składnikami; jednym klikiem na listę.
 
-**Faza 5 — AI import przepisu z linku** ✅
+**Faza 5 — AI import przepisu z linku** ✅ DONE 2026-07-25
 - Rozszerz `ai`: `POST /ai/recipes/import` (OpenRouter) → draft z rozpoznanymi
   składnikami/jednostkami, normalizacja, dopasowanie do datasetu.
 - Dostęp: użytkownik Premium/admin/owner **lub** skonfigurowany własny token OpenRouter
   (`require_ai_access` / `AiAccessUser`).
 - Kryterium: wklejenie linku → wypełniony formularz przepisu do potwierdzenia.
+- **Status:** Backend endpoint, service, schemas, error handling complete. 
+  See `recipe-import-phase5-log.md`.
 
 **Faza 6 — Offline / sync + search**
 - PWA cache + kolejka lokalnych zmian; `sync/changes` + `sync/push`; rozstrzyganie
