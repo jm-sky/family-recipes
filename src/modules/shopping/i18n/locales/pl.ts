@@ -17,6 +17,15 @@ export const shoppingPl = {
       deleteConfirm: 'Usunąć tę listę?',
     },
     list: {
+      keepSync: {
+        create: 'Sync z Google Keep',
+        menu: 'Google Keep',
+        syncNow: 'Synchronizuj teraz',
+        autoSync: 'Automatyczna synchronizacja',
+        unlink: 'Odłącz od Keep',
+        synced: 'Zsynchronizowano z Keep o {time}',
+        error: 'Ostatnia synchronizacja z Keep nie powiodła się',
+      },
       back: 'Wróć do list',
       addProduct: 'Dodaj produkt',
       searchPlaceholder: 'Szukaj lub wpisz produkt…',

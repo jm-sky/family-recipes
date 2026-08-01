@@ -17,6 +17,15 @@ export const shoppingEn = {
       deleteConfirm: 'Delete this list?',
     },
     list: {
+      keepSync: {
+        create: 'Sync with Google Keep',
+        menu: 'Google Keep',
+        syncNow: 'Sync now',
+        autoSync: 'Auto-sync',
+        unlink: 'Unlink from Keep',
+        synced: 'Synced to Keep at {time}',
+        error: 'Last Keep sync failed',
+      },
       back: 'Back to lists',
       addProduct: 'Add product',
       searchPlaceholder: 'Search or type a product…',

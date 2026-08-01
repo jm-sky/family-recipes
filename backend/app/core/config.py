@@ -656,6 +656,25 @@ class AISettings(BaseSettings):
         return parse_bool_value(v)
 
 
+class KeepSettings(BaseSettings):
+    """Google Keep shopping-list sync configuration (unofficial gkeepapi/gpsoauth)."""
+
+    model_config = _base_config
+
+    enabled: bool = Field(default=False, validation_alias="KEEP_SYNC_ENABLED", description="Enable Google Keep sync features")
+    token_encryption_key: str = Field(
+        default="",
+        validation_alias="KEEP_TOKEN_ENCRYPTION_KEY",
+        description="Fernet encryption key for Keep master tokens",
+    )
+
+    @field_validator("enabled", mode="before")
+    @classmethod
+    def parse_bool_field(cls, v: str | bool) -> bool:
+        """Parse boolean field from string or bool."""
+        return parse_bool_value(v)
+
+
 class RedisSettings(BaseSettings):
     """Redis configuration for token blacklist and challenge storage."""
 
@@ -798,6 +817,7 @@ class Settings(BaseSettings):
     redis: RedisSettings = Field(default_factory=RedisSettings)
     webauthn: WebAuthnSettings = Field(default_factory=WebAuthnSettings)
     stripe: StripeSettings = Field(default_factory=StripeSettings)
+    keep: KeepSettings = Field(default_factory=KeepSettings)
     health: HealthSettings = Field(default_factory=HealthSettings)
 
     # Legacy compatibility - still accessible at root level
