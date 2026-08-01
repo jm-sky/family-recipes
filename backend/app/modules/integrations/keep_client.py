@@ -3,22 +3,15 @@
 Isolates the reverse-engineered protocol details to this one file, so drift
 in gkeepapi's API only requires changes here, not in KeepSyncService/router.
 
-gkeepapi's ``login``/``sync``/``createList``/``find`` calls are blocking
-network I/O (the library has no async support) — every method here is meant
-to be called via ``asyncio.to_thread(...)`` from the async service layer so a
-slow or broken Keep session never stalls the event loop.
+gkeepapi's ``authenticate``/``sync``/``createList``/``find`` calls are
+blocking network I/O (the library has no async support) — every method here
+is meant to be called via ``asyncio.to_thread(...)`` from the async service
+layer so a slow or broken Keep session never stalls the event loop.
 """
-
-import secrets
 
 import gkeepapi
 
 from app.modules.integrations.exceptions import KeepAuthenticationError, KeepNoteMissingError
-
-
-def generate_device_id() -> str:
-    """Generate a random device ID for a new Keep connection (gkeepapi/gpsoauth require one)."""
-    return secrets.token_hex(8)
 
 
 class KeepClient:
@@ -27,22 +20,25 @@ class KeepClient:
     def authenticate(self, email: str, master_token: str, device_id: str) -> gkeepapi.Keep:
         """Log in to Google Keep using a previously-obtained master token.
 
+        Uses ``Keep.authenticate()`` (master-token flow), not the deprecated
+        ``Keep.login()`` (raw password flow, discouraged by gkeepapi itself).
+
         Args:
             email: Google account email
-            master_token: gpsoauth master token (acts as the account password here)
+            master_token: Master token obtained via gpsoauth (see docs/plans/2026-07-07-keep-export.md)
             device_id: Device ID associated with the master token
 
         Returns:
             An authenticated gkeepapi.Keep session
 
         Raises:
-            KeepAuthenticationError: If login fails
+            KeepAuthenticationError: If authentication fails
         """
         keep = gkeepapi.Keep()
         try:
-            keep.login(email, master_token, device_id=device_id)
+            keep.authenticate(email, master_token, device_id=device_id)
         except Exception as e:
-            raise KeepAuthenticationError(f"Google Keep login failed: {e}") from e
+            raise KeepAuthenticationError(f"Google Keep authentication failed: {e}") from e
         return keep
 
     def find_or_create_note(self, keep: gkeepapi.Keep, title: str) -> gkeepapi.node.List:

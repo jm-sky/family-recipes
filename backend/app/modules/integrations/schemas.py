@@ -20,8 +20,14 @@ class KeepConnectRequest(BaseModel):
     """Request to link a Google Keep account via a manually-obtained master token."""
 
     email: str = Field(..., min_length=3, max_length=255, description="Google account email")
-    master_token: str = Field(..., alias="masterToken", serialization_alias="masterToken", min_length=10, description="gpsoauth master token")
-    device_id: str | None = Field(None, alias="deviceId", serialization_alias="deviceId", description="Device ID for gkeepapi (generated if omitted)")
+    master_token: str = Field(..., alias="masterToken", serialization_alias="masterToken", min_length=10, description="Master token obtained via gpsoauth")
+    device_id: str = Field(
+        ...,
+        alias="deviceId",
+        serialization_alias="deviceId",
+        min_length=1,
+        description="The same android_id used with gpsoauth to obtain the master token (must match, not arbitrary)",
+    )
 
     model_config = {"populate_by_name": True}
 

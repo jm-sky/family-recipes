@@ -23,7 +23,7 @@ const { handleSubmit, resetForm, isSubmitting } = useForm({
   validationSchema: toTypedSchema(z.object({
     email: z.string().email(t('settings.integrations.keep.form.emailInvalid')),
     masterToken: z.string().min(10, t('settings.integrations.keep.form.tokenRequired')),
-    deviceId: z.string().optional(),
+    deviceId: z.string().min(1, t('settings.integrations.keep.form.deviceIdRequired')),
   })),
 })
 
@@ -31,7 +31,7 @@ const handleConnect = handleSubmit(async (values) => {
   await connect({
     email: values.email,
     masterToken: values.masterToken,
-    deviceId: values.deviceId || undefined,
+    deviceId: values.deviceId,
   })
   resetForm()
   understood.value = false

@@ -8,7 +8,7 @@ export interface KeepStatus {
 export interface KeepConnectRequest {
   email: string
   masterToken: string
-  deviceId?: string
+  deviceId: string
 }
 
 export interface KeepMirror {

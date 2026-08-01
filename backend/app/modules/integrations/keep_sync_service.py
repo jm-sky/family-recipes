@@ -5,7 +5,7 @@ from decimal import Decimal
 
 from app.modules.integrations.db_models import KeepConnectionDB, KeepListMirrorDB
 from app.modules.integrations.exceptions import KeepMirrorNotFoundError, KeepNotConnectedError
-from app.modules.integrations.keep_client import KeepClient, generate_device_id
+from app.modules.integrations.keep_client import KeepClient
 from app.modules.integrations.repository import IntegrationsRepository
 from app.modules.integrations.schemas import (
     KeepConnectRequest,
@@ -90,7 +90,7 @@ class KeepSyncService:
 
         Args:
             user_id: User ID
-            payload: Email, master token, optional device ID
+            payload: Email, master token, and the android_id it was obtained with
 
         Returns:
             Updated connection status
@@ -98,7 +98,7 @@ class KeepSyncService:
         Raises:
             KeepAuthenticationError: If the master token is rejected by Google
         """
-        device_id = payload.device_id or generate_device_id()
+        device_id = payload.device_id
         await asyncio.to_thread(self.keep_client.authenticate, payload.email, payload.master_token, device_id)
 
         encrypted = encrypt_master_token(payload.master_token)
