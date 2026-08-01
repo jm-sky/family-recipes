@@ -28,7 +28,7 @@ export const publicRoutes: RouteRecordRaw[] = [
     path: PublicRoutePaths.landing,
     name: PublicRouteNames.landing,
     component: () => import('@/pages/LandingPage.vue'),
-    meta: { title: 'common.pages.landing' },
+    meta: { title: 'common.pages.landing', requiresGuest: true },
   },
   {
     path: PublicRoutePaths.about,
