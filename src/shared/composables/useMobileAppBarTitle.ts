@@ -1,4 +1,4 @@
-import { onUnmounted, ref, toValue, watch, type MaybeRefOrGetter } from 'vue'
+import { type MaybeRefOrGetter, onUnmounted, ref, toValue, watch } from 'vue'
 
 /** Shared override for the mobile TopAppBar title (null = use route.meta.title). */
 export const mobileAppBarTitle = ref<string | null>(null)

@@ -14,9 +14,9 @@ from pydantic import BaseModel, Field, HttpUrl, field_validator
 class CreateCheckoutSessionRequest(BaseModel):
     """Request schema for creating a Stripe Checkout session."""
 
-    planTier: Literal["pro", "pro_plus"] = Field(
+    planTier: Literal["basic", "pro"] = Field(
         ...,
-        description="Subscription plan tier (pro or pro_plus)",
+        description="Subscription plan tier (basic or pro)",
     )
     billingInterval: Literal["monthly", "annual"] = Field(
         ...,
@@ -63,7 +63,7 @@ class SubscriptionResponse(BaseModel):
     userId: str = Field(alias="user_id", serialization_alias="userId")
     stripeCustomerId: str | None = Field(None, alias="stripe_customer_id", serialization_alias="stripeCustomerId")
     stripeSubscriptionId: str | None = Field(None, alias="stripe_subscription_id", serialization_alias="stripeSubscriptionId")
-    planTier: Literal["free", "pro", "pro_plus"] = Field(alias="plan_tier", serialization_alias="planTier")
+    planTier: Literal["free", "basic", "pro"] = Field(alias="plan_tier", serialization_alias="planTier")
     billingInterval: Literal["month", "year"] | None = Field(None, alias="billing_interval", serialization_alias="billingInterval")
     status: Literal["active", "canceled", "past_due", "unpaid", "incomplete"] = Field(alias="status", serialization_alias="status")
     currentPeriodStart: datetime | None = Field(None, alias="current_period_start", serialization_alias="currentPeriodStart")
@@ -103,7 +103,7 @@ class PortalSessionResponse(BaseModel):
 class SubscriptionLimitsResponse(BaseModel):
     """Response schema for subscription feature limits."""
 
-    planTier: Literal["free", "pro", "pro_plus"]
+    planTier: Literal["free", "basic", "pro"]
     aiMonthlyTokenLimit: int
     storageLimit: int
     canExportData: bool
@@ -189,7 +189,7 @@ class AdminSubscriptionResponse(BaseModel):
     userEmail: str | None = Field(None, alias="user_email", serialization_alias="userEmail")
     stripeCustomerId: str | None = Field(None, alias="stripe_customer_id", serialization_alias="stripeCustomerId")
     stripeSubscriptionId: str | None = Field(None, alias="stripe_subscription_id", serialization_alias="stripeSubscriptionId")
-    planTier: Literal["free", "pro", "pro_plus"] = Field(alias="plan_tier", serialization_alias="planTier")
+    planTier: Literal["free", "basic", "pro"] = Field(alias="plan_tier", serialization_alias="planTier")
     billingInterval: Literal["month", "year"] | None = Field(None, alias="billing_interval", serialization_alias="billingInterval")
     status: Literal["active", "canceled", "past_due", "unpaid", "incomplete"] = Field(alias="status", serialization_alias="status")
     currentPeriodStart: datetime | None = Field(None, alias="current_period_start", serialization_alias="currentPeriodStart")
@@ -222,8 +222,8 @@ class AdminSubscriptionStatsResponse(BaseModel):
     canceledSubscriptions: int
     pastDueSubscriptions: int
     freeUsers: int
+    basicUsers: int
     proUsers: int
-    proPlusUsers: int
     grandfatheredUsers: int
     monthlyRevenue: float
     annualRevenue: float
@@ -232,7 +232,7 @@ class AdminSubscriptionStatsResponse(BaseModel):
 class AdminUpdateSubscriptionRequest(BaseModel):
     """Request schema for admin subscription modifications."""
 
-    planTier: Literal["free", "pro", "pro_plus"] | None = Field(
+    planTier: Literal["free", "basic", "pro"] | None = Field(
         None,
         description="Update subscription plan tier",
     )

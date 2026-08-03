@@ -263,9 +263,7 @@ class GitHubOAuthProvider(OAuthProvider):
             data = response.json()
 
             if "error" in data:
-                raise ValueError(
-                    data.get("error_description") or data.get("error", "GitHub OAuth error")
-                )
+                raise ValueError(data.get("error_description") or data.get("error", "GitHub OAuth error"))
 
             return OAuthTokenResponse(
                 accessToken=data["access_token"],
@@ -303,10 +301,7 @@ class GitHubOAuthProvider(OAuthProvider):
                             break
 
             if not email:
-                raise ValueError(
-                    "GitHub account email is required — enable user:email scope "
-                    "or make your email public on GitHub"
-                )
+                raise ValueError("GitHub account email is required — enable user:email scope " "or make your email public on GitHub")
 
             return OAuthUserInfo(
                 provider="github",

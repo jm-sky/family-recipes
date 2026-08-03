@@ -76,6 +76,7 @@ export const config = {
   },
   stripe: {
     enabled: import.meta.env.VITE_STRIPE_ENABLED === 'true',
+    publishableKey: (import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY as string | undefined) || '',
   },
   storage: {
     // Maximum file size for regular users (20 MB)

@@ -6,16 +6,19 @@ export type PlanTier = 'free' | 'basic' | 'pro'
 
 export type BillingInterval = 'monthly' | 'annual'
 
+/** Values stored/returned by the API (Stripe-style). */
+export type SubscriptionBillingInterval = 'month' | 'year'
+
 export type SubscriptionStatus = 'active' | 'canceled' | 'past_due' | 'unpaid' | 'incomplete'
 
-/** Stripe subscription record (gear-stack); plan display uses family plan instead. */
+/** Stripe subscription record; plan display uses family plan instead. */
 export interface Subscription {
   id: string
   userId: string
   stripeCustomerId: string | null
   stripeSubscriptionId: string | null
-  planTier: 'free' | 'pro' | 'pro_plus'
-  billingInterval: BillingInterval | null
+  planTier: 'free' | 'basic' | 'pro'
+  billingInterval: SubscriptionBillingInterval | null
   status: SubscriptionStatus
   currentPeriodStart: string | null
   currentPeriodEnd: string | null
@@ -71,6 +74,7 @@ export interface PlanFeatures {
   popular?: boolean
 }
 
+/** Accepted PLN list prices (2026-08-03 monetization plan). */
 export const PLAN_FEATURES: Record<PlanTier, PlanFeatures> = {
   free: {
     tier: 'free',
@@ -84,6 +88,8 @@ export const PLAN_FEATURES: Record<PlanTier, PlanFeatures> = {
       'Up to 2 family members',
       'Shared shopping lists',
       'Shared family recipes',
+      'Google Keep export',
+      'AI import with your own OpenRouter key',
     ],
     memberLimit: 2,
   },
@@ -91,14 +97,14 @@ export const PLAN_FEATURES: Record<PlanTier, PlanFeatures> = {
     tier: 'basic',
     name: 'Basic',
     price: {
-      monthly: 5,
-      annual: 50,
-      annualMonthly: 4.17,
+      monthly: 9.99,
+      annual: 99,
+      annualMonthly: 8.25,
     },
     features: [
       'Up to 5 family members',
       'Everything in Free',
-      'Shared shopping lists and recipes',
+      'AI recipe import (system key, limited)',
     ],
     memberLimit: 5,
     popular: true,
@@ -107,17 +113,21 @@ export const PLAN_FEATURES: Record<PlanTier, PlanFeatures> = {
     tier: 'pro',
     name: 'Pro',
     price: {
-      monthly: 10,
-      annual: 100,
-      annualMonthly: 8.33,
+      monthly: 14.99,
+      annual: 149,
+      annualMonthly: 12.42,
     },
     features: [
       'Unlimited family members',
       'Everything in Basic',
-      'AI-powered recipe import',
+      'Higher AI budget (system key)',
     ],
     memberLimit: null,
   },
 }
 
 export const ANNUAL_DISCOUNT_PERCENT = 17
+
+export function formatPln(amount: number): string {
+  return `${amount.toFixed(2).replace('.', ',')} zł`
+}

@@ -100,6 +100,8 @@ async def handle_checkout_session_completed(
             reason=f"Checkout session {session.id} completed",
         )
 
+        await _sync_family_plan_for_user(repository, subscription.user_id, plan_tier)
+
         logger.info(f"Activated subscription {subscription_id} for customer {customer_id}")
     except Exception as e:
         logger.error(f"Failed to process checkout.session.completed: {e}")
@@ -194,6 +196,9 @@ async def handle_customer_subscription_updated(
             reason=f"Stripe event: {event.type}",
         )
 
+        family_plan = plan_tier if sub_status in ("active", "trialing") else "free"
+        await _sync_family_plan_for_user(repository, subscription.user_id, family_plan)
+
         logger.info(f"Updated subscription {subscription_id}: {change_details}")
     except Exception as e:
         logger.error(f"Failed to process customer.subscription.updated: {e}")
@@ -246,6 +251,8 @@ async def handle_customer_subscription_deleted(
             new_value="free",
             reason=f"Subscription {subscription_id} deleted",
         )
+
+        await _sync_family_plan_for_user(repository, subscription.user_id, "free")
 
         logger.info(f"Cancelled subscription {subscription_id}, downgraded to free")
     except Exception as e:
@@ -380,25 +387,31 @@ def _get_plan_tier_from_price_id(price_id: str) -> str:
         price_id: Stripe price ID
 
     Returns:
-        Plan tier (pro or business)
+        Plan tier (basic or pro)
 
     Raises:
         WebhookProcessingError: If price_id doesn't match any known plan
     """
-    from ...core.config import settings
+    from .plan_constants import plan_tier_from_price_id
 
-    price_map = {
-        settings.stripe.pro_monthly_price_id: "pro",
-        settings.stripe.pro_annual_price_id: "pro",
-        settings.stripe.pro_plus_monthly_price_id: "pro_plus",
-        settings.stripe.pro_plus_annual_price_id: "pro_plus",
-    }
-
-    plan_tier = price_map.get(price_id)
+    plan_tier = plan_tier_from_price_id(price_id)
     if not plan_tier:
         raise WebhookProcessingError(f"Unknown price_id: {price_id}")
 
     return plan_tier
+
+
+async def _sync_family_plan_for_user(repository: BillingRepository, user_id: str, plan: str) -> None:
+    """Update families.plan for the user's family (product source of truth)."""
+    from app.modules.family.repository import FamilyRepository
+
+    family_repo = FamilyRepository(repository.db)
+    membership = await family_repo.get_membership_for_user(user_id)
+    if not membership:
+        logger.warning("No family membership for user %s — skip family.plan sync to %s", user_id, plan)
+        return
+    await family_repo.update_plan(membership.family_id, plan)
+    logger.info("Synced family %s plan → %s (user %s)", membership.family_id, plan, user_id)
 
 
 # Event handler mapping

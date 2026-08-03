@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import CommonPageHeader from '@/components/layout/CommonPageHeader.vue'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -12,11 +12,14 @@ import { BillingRouteIcon } from '../routes'
 import { PLAN_FEATURES } from '../types'
 
 const { t } = useI18n()
-const { currentPlan, upgradeToPlan, isUpgrading, stripeEnabled } = useSubscription()
+const { currentPlan, upgradeToPlan, isUpgrading, stripeEnabled, isFamilyOwner } = useSubscription()
 
 const billingInterval = ref<BillingInterval>('monthly')
 
+const canSelectPlan = computed(() => stripeEnabled && isFamilyOwner.value)
+
 const handleSelectPlan = async (planTier: 'basic' | 'pro') => {
+  if (!canSelectPlan.value) return
   await upgradeToPlan(planTier, billingInterval.value)
 }
 </script>
@@ -44,6 +47,9 @@ const handleSelectPlan = async (planTier: 'basic' | 'pro') => {
               <p class="mt-2 text-muted-foreground">
                 {{ stripeEnabled ? t('billing.choosePlan') : t('billing.paymentsComingSoon') }}
               </p>
+              <p v-if="stripeEnabled && !isFamilyOwner" class="mt-1 text-sm text-muted-foreground">
+                {{ t('billing.errors.ownerOnly') }}
+              </p>
             </div>
 
             <Tabs :model-value="billingInterval" @update:model-value="(v) => billingInterval = v as BillingInterval">
@@ -68,14 +74,14 @@ const handleSelectPlan = async (planTier: 'basic' | 'pro') => {
                     billing-interval="monthly"
                     :is-current-plan="currentPlan === 'basic'"
                     :is-loading="isUpgrading"
-                    :on-select-plan="stripeEnabled ? () => handleSelectPlan('basic') : undefined"
+                    :on-select-plan="canSelectPlan ? () => handleSelectPlan('basic') : undefined"
                   />
                   <PlanCard
                     :plan="PLAN_FEATURES.pro"
                     billing-interval="monthly"
                     :is-current-plan="currentPlan === 'pro'"
                     :is-loading="isUpgrading"
-                    :on-select-plan="stripeEnabled ? () => handleSelectPlan('pro') : undefined"
+                    :on-select-plan="canSelectPlan ? () => handleSelectPlan('pro') : undefined"
                   />
                 </div>
               </TabsContent>
@@ -92,14 +98,14 @@ const handleSelectPlan = async (planTier: 'basic' | 'pro') => {
                     billing-interval="annual"
                     :is-current-plan="currentPlan === 'basic'"
                     :is-loading="isUpgrading"
-                    :on-select-plan="stripeEnabled ? () => handleSelectPlan('basic') : undefined"
+                    :on-select-plan="canSelectPlan ? () => handleSelectPlan('basic') : undefined"
                   />
                   <PlanCard
                     :plan="PLAN_FEATURES.pro"
                     billing-interval="annual"
                     :is-current-plan="currentPlan === 'pro'"
                     :is-loading="isUpgrading"
-                    :on-select-plan="stripeEnabled ? () => handleSelectPlan('pro') : undefined"
+                    :on-select-plan="canSelectPlan ? () => handleSelectPlan('pro') : undefined"
                   />
                 </div>
               </TabsContent>

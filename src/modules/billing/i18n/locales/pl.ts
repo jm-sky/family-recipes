@@ -59,6 +59,8 @@ export const pl = {
           memberLimit: 'Do 2 członków rodziny',
           shoppingLists: 'Współdzielone listy zakupów',
           recipes: 'Współdzielone przepisy rodzinne',
+          keepExport: 'Eksport do Google Keep',
+          aiByok: 'Import AI z własnym kluczem OpenRouter',
         },
       },
       basic: {
@@ -68,28 +70,29 @@ export const pl = {
         features: {
           memberLimit: 'Do 5 członków rodziny',
           everythingInFree: 'Wszystko z planu Darmowy',
-          shoppingAndRecipes: 'Współdzielone listy zakupów i przepisy',
+          aiImport: 'Import przepisów AI (klucz systemowy, limit)',
         },
       },
       pro: {
         name: 'Pro',
-        description: 'Bez limitu członków',
+        description: 'Bez limitu członków + większy AI',
         fullName: 'Plan Pro',
         features: {
           memberLimit: 'Bez limitu członków rodziny',
           everythingInBasic: 'Wszystko z planu Basic',
-          aiImport: 'Import przepisów wspierany przez AI',
+          aiImport: 'Wyższy limit AI (klucz systemowy)',
         },
       },
     },
     upgradeBanner: {
-      title: 'Potrzebujesz więcej członków rodziny?',
-      description: 'Przejdź na plan Basic lub Pro, aby zaprosić więcej osób do rodziny.',
+      title: 'Potrzebujesz więcej członków lub AI?',
+      description: 'Przejdź na plan Basic lub Pro, aby zaprosić więcej osób i korzystać z importu AI.',
       button: 'Zobacz Plany',
     },
     errors: {
       checkoutFailed: 'Nie udało się utworzyć sesji checkout. Spróbuj ponownie.',
       portalFailed: 'Nie udało się otworzyć portalu rozliczeniowego. Spróbuj ponownie.',
+      ownerOnly: 'Tylko właściciel rodziny może zarządzać płatnościami.',
     },
   },
 }

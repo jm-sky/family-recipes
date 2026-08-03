@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import type { BillingInterval, PlanFeatures } from '../types'
+import { formatPln } from '../types'
 import { getTranslatedFeatures } from '../utils/planTranslations'
 
 const { t } = useI18n()
@@ -49,15 +50,15 @@ const translatedFeatures = computed(() => getTranslatedFeatures(plan.tier, plan.
       </div>
       <CardDescription>
         <div class="mt-4 flex items-baseline gap-2">
-          <span class="text-3xl font-bold">${{ displayedPrice }}</span>
+          <span class="text-3xl font-bold">{{ formatPln(displayedPrice) }}</span>
           <span class="text-muted-foreground">{{ t('billing.perMonth') }}</span>
         </div>
         <div v-if="originalPrice" class="text-sm text-muted-foreground">
-          <span class="line-through">${{ originalPrice }}{{ t('billing.perMonth') }}</span>
+          <span class="line-through">{{ formatPln(originalPrice) }}{{ t('billing.perMonth') }}</span>
           <span class="ml-2 text-green-600">{{ t('billing.savePercent', { percent: 17 }) }}</span>
         </div>
-        <div class="mt-1 text-sm text-muted-foreground">
-          ${{ annualPrice }}{{ t('billing.perYear') }}
+        <div v-if="billingInterval === 'annual'" class="mt-1 text-sm text-muted-foreground">
+          {{ formatPln(annualPrice) }}{{ t('billing.perYear') }}
         </div>
       </CardDescription>
     </CardHeader>

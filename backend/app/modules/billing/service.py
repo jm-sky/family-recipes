@@ -94,7 +94,7 @@ class BillingService:
             StripeAPIError: If Stripe API call fails
         """
         # Validate plan tier
-        if plan_tier not in ["pro", "pro_plus"]:
+        if plan_tier not in ["basic", "pro"]:
             raise InvalidPlanTierError(f"Invalid plan tier: {plan_tier}")
 
         # Validate billing interval
@@ -105,7 +105,7 @@ class BillingService:
         subscription = await self.repository.get_subscription_by_user_id(user_id)
 
         # If user has active paid subscription, cancel it first to allow upgrade/downgrade
-        if subscription and subscription.plan_tier in ["pro", "pro_plus"] and subscription.status == "active":
+        if subscription and subscription.plan_tier in ["basic", "pro"] and subscription.status == "active":
             logger.info(f"User {user_id} changing from {subscription.plan_tier} to {plan_tier}, canceling old subscription")
 
             # Cancel old Stripe subscription if it exists
@@ -314,45 +314,39 @@ class BillingService:
         limits: dict[str, dict[str, int | bool]] = {
             "free": {
                 "aiMonthlyTokenLimit": 0,  # 0 = BYOK required
-                "storageLimit": 100 * 1024 * 1024,  # 100 MB (for images/storage)
+                "storageLimit": 100 * 1024 * 1024,  # 100 MB
                 "canExportData": True,
                 "canUseAdvancedFeatures": False,
                 "requiresByok": True,
-                # Free tier: ~2-4 MB database space protection
-                # Enough for typical users (multiple shopping lists), protects against abuse
-                "itemsLimit": 2000,  # ~2-4 MB database space
-                "containersLimit": 100,  # ~50-100 KB database space (containers are lightweight)
+                "itemsLimit": 2000,
+                "containersLimit": 100,
+            },
+            "basic": {
+                "aiMonthlyTokenLimit": 500_000,  # ~$0.50 system budget
+                "storageLimit": 2 * 1024 * 1024 * 1024,  # 2 GB
+                "canExportData": True,
+                "canUseAdvancedFeatures": True,
+                "requiresByok": False,
+                "itemsLimit": 5000,
+                "containersLimit": 150,
             },
             "pro": {
-                "aiMonthlyTokenLimit": 1_000_000,  # ~$1 worth
-                "storageLimit": 5 * 1024 * 1024 * 1024,  # 5 GB (for images/storage)
+                "aiMonthlyTokenLimit": 2_000_000,  # ~$2 system budget
+                "storageLimit": 10 * 1024 * 1024 * 1024,  # 10 GB
                 "canExportData": True,
                 "canUseAdvancedFeatures": True,
                 "requiresByok": False,
-                # Pro tier: ~10-20 MB database space
-                # For power users with extensive recipe collections
-                "itemsLimit": 10000,  # ~10-20 MB database space
-                "containersLimit": 250,  # ~125-250 KB database space
-            },
-            "pro_plus": {
-                "aiMonthlyTokenLimit": 10_000_000,  # ~$10 worth
-                "storageLimit": 50 * 1024 * 1024 * 1024,  # 50 GB (for images/storage)
-                "canExportData": True,
-                "canUseAdvancedFeatures": True,
-                "requiresByok": False,
-                # Pro Plus tier: ~50-100 MB database space
-                # For professional users or very large collections
-                "itemsLimit": 50000,  # ~50-100 MB database space
-                "containersLimit": 500,  # ~250-500 KB database space
+                "itemsLimit": 20000,
+                "containersLimit": 500,
             },
         }
 
         plan_limits = limits.get(plan_tier, limits["free"])
 
         # Type cast plan_tier to Literal and dict bool values to proper types
-        from typing import cast, Literal
+        from typing import Literal, cast
 
-        plan_tier_typed = cast(Literal["free", "pro", "pro_plus"], plan_tier)
+        plan_tier_typed = cast(Literal["free", "basic", "pro"], plan_tier)
 
         return SubscriptionLimitsResponse(
             planTier=plan_tier_typed,
@@ -384,7 +378,7 @@ class BillingService:
             return False
 
         # Paid tiers have AI access
-        if subscription.plan_tier in ["pro", "pro_plus"]:
+        if subscription.plan_tier in ["basic", "pro"]:
             return True
 
         # Free tier requires BYOK
@@ -400,7 +394,7 @@ class BillingService:
         Get Stripe price ID for plan tier and billing interval.
 
         Args:
-            plan_tier: Plan tier (pro or business)
+            plan_tier: Plan tier (basic or pro)
             billing_interval: Billing interval (monthly or annual)
 
         Returns:
@@ -410,24 +404,15 @@ class BillingService:
             InvalidPlanTierError: If plan tier is invalid
             InvalidBillingIntervalError: If billing interval is invalid
         """
-        price_map = {
-            "pro": {
-                "monthly": settings.stripe.pro_monthly_price_id,
-                "annual": settings.stripe.pro_annual_price_id,
-            },
-            "pro_plus": {
-                "monthly": settings.stripe.pro_plus_monthly_price_id,
-                "annual": settings.stripe.pro_plus_annual_price_id,
-            },
-        }
+        from .plan_constants import get_price_id
 
-        if plan_tier not in price_map:
+        if plan_tier not in ("basic", "pro"):
             raise InvalidPlanTierError(f"Invalid plan tier: {plan_tier}")
 
-        if billing_interval not in price_map[plan_tier]:
+        if billing_interval not in ("monthly", "annual"):
             raise InvalidBillingIntervalError(f"Invalid billing interval: {billing_interval}")
 
-        price_id = price_map[plan_tier][billing_interval]
+        price_id = get_price_id(plan_tier, billing_interval)
         if not price_id:
             raise InvalidPlanTierError(f"Price ID not configured for {plan_tier}/{billing_interval}")
 
@@ -512,28 +497,28 @@ class BillingService:
 
         # Count by plan tier
         free_count = sum(1 for s in subscriptions if s.plan_tier == "free")
+        basic_count = sum(1 for s in subscriptions if s.plan_tier == "basic")
         pro_count = sum(1 for s in subscriptions if s.plan_tier == "pro")
-        pro_plus_count = sum(1 for s in subscriptions if s.plan_tier == "pro_plus")
 
         # Count grandfathered users
         grandfathered_count = sum(1 for s in subscriptions if s.is_grandfathered)
 
-        # Calculate revenue (rough estimate based on plan tiers and billing intervals)
+        # Calculate revenue (PLN list prices from monetization plan)
         monthly_revenue = 0.0
         annual_revenue = 0.0
 
         for sub in subscriptions:
             if sub.status == "active" and not sub.is_grandfathered:
-                if sub.plan_tier == "pro":
-                    if sub.billing_interval == "monthly":
-                        monthly_revenue += 5.0
-                    elif sub.billing_interval == "annual":
-                        annual_revenue += 50.0
-                elif sub.plan_tier == "pro_plus":
-                    if sub.billing_interval == "monthly":
-                        monthly_revenue += 15.0
-                    elif sub.billing_interval == "annual":
-                        annual_revenue += 150.0
+                if sub.plan_tier == "basic":
+                    if sub.billing_interval == "month":
+                        monthly_revenue += 9.99
+                    elif sub.billing_interval == "year":
+                        annual_revenue += 99.0
+                elif sub.plan_tier == "pro":
+                    if sub.billing_interval == "month":
+                        monthly_revenue += 14.99
+                    elif sub.billing_interval == "year":
+                        annual_revenue += 149.0
 
         # Get total users count
         from app.modules.auth.db_models import UserDB
@@ -547,8 +532,8 @@ class BillingService:
             "canceledSubscriptions": canceled_count,
             "pastDueSubscriptions": past_due_count,
             "freeUsers": free_count,
+            "basicUsers": basic_count,
             "proUsers": pro_count,
-            "proPlusUsers": pro_plus_count,
             "grandfatheredUsers": grandfathered_count,
             "monthlyRevenue": monthly_revenue,
             "annualRevenue": annual_revenue,
@@ -595,7 +580,7 @@ class BillingService:
 
         # Update fields
         if plan_tier is not None and plan_tier != subscription.plan_tier:
-            if plan_tier not in ["free", "pro", "pro_plus"]:
+            if plan_tier not in ["free", "basic", "pro"]:
                 raise InvalidPlanTierError(f"Invalid plan tier: {plan_tier}")
             changes.append(("plan_tier", subscription.plan_tier, plan_tier))
             subscription.plan_tier = plan_tier
@@ -637,6 +622,11 @@ class BillingService:
                     new_value=new_val,
                     reason=reason or "Manual admin modification",
                 )
+
+            if plan_tier is not None:
+                from app.modules.billing.webhook_handler import _sync_family_plan_for_user
+
+                await _sync_family_plan_for_user(self.repository, subscription.user_id, plan_tier)
 
             return SubscriptionResponse.model_validate(updated_subscription)
 
@@ -738,6 +728,9 @@ class BillingService:
                 )
 
             logger.info(f"Admin canceled subscription {subscription_id}")
+            from app.modules.billing.webhook_handler import _sync_family_plan_for_user
+
+            await _sync_family_plan_for_user(self.repository, subscription.user_id, "free")
             return SubscriptionResponse.model_validate(updated_subscription)
 
         return SubscriptionResponse.model_validate(subscription)

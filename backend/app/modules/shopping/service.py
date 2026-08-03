@@ -11,6 +11,7 @@ from decimal import Decimal, InvalidOperation
 from typing import Protocol
 
 from app.modules.ingredients.conversion import IngredientMatch, _fold
+from app.modules.ingredients.schemas import IngredientsResponse
 from app.modules.shopping.constants import DEFAULT_CATEGORIES, POPULAR_INGREDIENT_NAMES, UNIT_ALIASES, UNITS_SET
 from app.modules.shopping.db_models import CategoryDB, ShoppingListDB, ShoppingListItemDB
 from app.modules.shopping.exceptions import (
@@ -208,7 +209,7 @@ class IngredientMatcher(Protocol):
 
     async def match(self, name: str) -> IngredientMatch | None: ...
 
-    async def search(self, query: str | None): ...
+    async def search(self, query: str | None) -> IngredientsResponse: ...
 
 
 class ShoppingService:

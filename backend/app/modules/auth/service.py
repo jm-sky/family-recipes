@@ -477,9 +477,7 @@ class AuthService:
 
         # Delete user account
         if self.two_factor_repository:
-            two_factor_repository = cast(
-                "TwoFactorRepositoryInterface", self.two_factor_repository
-            )
+            two_factor_repository = cast("TwoFactorRepositoryInterface", self.two_factor_repository)
             try:
                 await two_factor_repository.disable_totp(user_id)
                 await two_factor_repository.delete_all_passkeys(user_id)

@@ -144,14 +144,15 @@ Proces tworzenia nowej aplikacji na bazie tego core'u:
 
 Limit dotyczy liczby członków rodziny: **(potwierdzone)**
 
-| Plan | Limit członków rodziny |
-|---|---|
-| Free | 2 osoby |
-| Basic | 5 osób |
-| Pro | bez limitu |
+| Plan | Limit członków rodziny | AI (klucz systemowy) | Keep |
+|---|---|---|---|
+| Free | 2 osoby | tylko BYOK | free |
+| Basic | 5 osób | limit ~0,50 USD / mies. | free |
+| Pro | bez limitu | limit ~2 USD / mies. | free |
 
 - Zaproszenia linkiem respektują limit planu.
 - Każda nowa rodzina startuje domyślnie na planie **Free**, z egzekwowanymi limitami **(potwierdzone)**
-- **Płatności / billing**: moduł pochodzi z gear-stack (boilerplate). Na start **disabled** (feature flag) — włączany później. Przy wyłączonym billingu plany można nadawać ręcznie. **(potwierdzone)**
+- **Płatności**: płaci **family owner** (rola w membership). Ceny PLN (zaakceptowane 2026-08-03): Basic **9,99 zł** / **99 zł** rok; Pro **14,99 zł** / **149 zł** rok. Szczegóły: [docs/plans/2026-08-03-monetization-stripe.md](docs/plans/2026-08-03-monetization-stripe.md).
+- **Billing Stripe**: moduł z gear-stack; na start **disabled** (`STRIPE_ENABLED=false`). Przy wyłączonym billingu plany można nadawać ręcznie. **(potwierdzone)**
 
 ---

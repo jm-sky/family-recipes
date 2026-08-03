@@ -87,7 +87,7 @@ async function handleDelete(recipeId: string) {
                   :src="recipe.imageUrl"
                   :alt="recipe.title"
                   class="size-full object-cover"
-                >
+                />
                 <div v-else class="flex size-full items-center justify-center text-muted-foreground">
                   <BookOpen :size="24" />
                 </div>

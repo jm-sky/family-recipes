@@ -77,12 +77,12 @@ const formattedTotalRevenue = computed(() => {
             <span class="font-medium">{{ stats?.freeUsers ?? 0 }}</span>
           </div>
           <div class="flex justify-between">
-            <span class="text-muted-foreground">Pro:</span>
-            <span class="font-medium">{{ stats?.proUsers ?? 0 }}</span>
+            <span class="text-muted-foreground">Basic:</span>
+            <span class="font-medium">{{ stats?.basicUsers ?? 0 }}</span>
           </div>
           <div class="flex justify-between">
-            <span class="text-muted-foreground">Pro Plus:</span>
-            <span class="font-medium">{{ stats?.proPlusUsers ?? 0 }}</span>
+            <span class="text-muted-foreground">Pro:</span>
+            <span class="font-medium">{{ stats?.proUsers ?? 0 }}</span>
           </div>
         </div>
       </CardContent>
