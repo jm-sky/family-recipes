@@ -1,8 +1,8 @@
 # Plan: Monetyzacja family-recipes (Stripe)
 
-**Status:** `in progress` — Faza A (kod) w toku; Stripe test products/keys już w `.env`  
+**Status:** `verification needed` — Faza B smoke 12/12 OK (2026-08-03); opcjonalnie ręczne Checkout kartą testową  
 **Data:** 2026-08-03  
-**Kontekst:** Kolejka monetyzacji (meta `.docs/stripe-status.md`) — family-recipes jako #1. Limity członków free/basic/pro już egzekwowane lokalnie; `STRIPE_ENABLED=false`.
+**Kontekst:** Kolejka monetyzacji (meta `.docs/stripe-status.md`) — family-recipes jako #1. Limity członków free/basic/pro już egzekwowane lokalnie; Stripe **test** włączony na VPS.
 
 ## Decyzje produktowe (zaakceptowane 2026-08-03)
 
@@ -91,13 +91,16 @@ Webhook: `price_id` → `basic` | `pro` → zapis do `families.plan` (oraz opcjo
 - [x] Testy BE (checkout, limits) — `test_billing_service.py`.
 - [x] Migracja `003` — tabele billing + plan_tier free/basic/pro.
 
-### Faza B — Stripe test na VPS — `todo`
+### Faza B — Stripe test na VPS — `done` (2026-08-03)
 
 - [x] Products/Prices w Stripe **test** (PLN).
 - [x] Klucze test + webhook endpoint + price IDs w `.env`.
 - [x] `STRIPE_ENABLED=true` (+ recreate kontenera; `VITE_STRIPE_ENABLED=true`).
-- [ ] Smoke: owner checkout Basic/Pro (miesiąc+rok), member blocked, limity członków, AI budget, portal, cancel → free.
-- [ ] Meta: `.docs/stripe-status.md` → 🧪 test (częściowo zaktualizowane).
+- [x] Deploy FE na `/var/www/family-recipes` (2026-08-03).
+- [x] Smoke API (12/12): owner checkout basic/pro × month/year → Stripe URL; member checkout/portal 403; free invite limit; AI free=403 / basic≠403; `families.plan` sync up/down.
+- [x] Meta: `.docs/stripe-status.md` → 🧪 test.
+
+**Poza smoke automatycznym:** pełna płatność kartą testową w Checkout UI + live webhook delivery z Dashboard (opcjonalna weryfikacja ręczna).
 
 ### Faza C — live — `todo`
 
@@ -115,6 +118,6 @@ Webhook: `price_id` → `basic` | `pro` → zapis do `families.plan` (oraz opcjo
 ## Referencje
 
 - [README.md](../../README.md) §12 — limity członków
-- [CLAUDE.md](../../CLAUDE.md) — `STRIPE_ENABLED=false`
+- [CLAUDE.md](../../CLAUDE.md) — `STRIPE_ENABLED=true` (test)
 - Meta: [`.docs/stripe-status.md`](../../../.docs/stripe-status.md)
 - Wzorzec: `gear-stack` billing (Checkout + webhooki + portal) — **adaptacja** pod family owner + `basic`/`pro` PLN

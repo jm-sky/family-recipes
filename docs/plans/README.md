@@ -14,6 +14,6 @@ Plany implementacji funkcji i większych zmian w projekcie.
 | [2026-07-07-shopping-product-suggestions.md](2026-07-07-shopping-product-suggestions.md) | Podpowiedzi produktów, ikony/kolory kategorii, auto-kategoryzacja | `verification needed` |
 | [2026-07-07-keep-export.md](2026-07-07-keep-export.md) | Jednokierunkowy eksport list zakupów do Google Keep (Gmail, gkeepapi) | `planned` |
 | [2026-07-07-native-mobile-ux.md](2026-07-07-native-mobile-ux.md) | Natywny look & feel na mobile — shell, bottom nav, listy, ścieżka Android | `in progress` |
-| [2026-08-03-monetization-stripe.md](2026-08-03-monetization-stripe.md) | Monetyzacja: ceny PLN, family owner, AI na paid, Stripe test→live | `in progress` |
+| [2026-08-03-monetization-stripe.md](2026-08-03-monetization-stripe.md) | Monetyzacja: ceny PLN, family owner, AI na paid, Stripe test→live | `verification needed` |
 
 When adding a new entry: create `YYYY-MM-DD-slug.md`, add a row here.
