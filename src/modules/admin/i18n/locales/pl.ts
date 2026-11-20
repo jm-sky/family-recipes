@@ -202,12 +202,14 @@ export const adminPl = {
       },
       plans: {
         free: 'Darmowy',
+        basic: 'Basic',
         pro: 'Pro',
-        pro_plus: 'Pro Plus',
       },
       billing: {
         monthly: 'Miesięczne',
         annual: 'Roczne',
+        month: 'Miesięczne',
+        year: 'Roczne',
       },
       status: {
         active: 'Aktywny',
@@ -218,8 +220,8 @@ export const adminPl = {
       },
       changeTo: {
         free: 'Zmień na Darmowy',
+        basic: 'Zmień na Basic',
         pro: 'Zmień na Pro',
-        pro_plus: 'Zmień na Pro Plus',
       },
       changePlan: {
         confirm: 'Czy na pewno chcesz zmienić plan na {plan}?',

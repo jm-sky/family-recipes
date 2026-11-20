@@ -44,6 +44,20 @@ class FamilyRepository:
         result = await self.db.execute(select(func.count()).select_from(FamilyMembershipDB).where(FamilyMembershipDB.family_id == family_id))
         return int(result.scalar_one())
 
+    async def update_plan(self, family_id: str, plan: str) -> FamilyDB | None:
+        """Update family plan tier (free / basic / pro)."""
+        family = await self.get_family(family_id)
+        if not family:
+            return None
+        family.plan = plan
+        await self.db.commit()
+        await self.db.refresh(family)
+        return family
+
+    async def list_member_user_ids(self, family_id: str) -> list[str]:
+        result = await self.db.execute(select(FamilyMembershipDB.user_id).where(FamilyMembershipDB.family_id == family_id))
+        return list(result.scalars().all())
+
     async def create_family(self, *, name: str, owner_user_id: str, plan: str) -> tuple[FamilyDB, FamilyMembershipDB]:
         family_id = generate_id()
         family = FamilyDB(

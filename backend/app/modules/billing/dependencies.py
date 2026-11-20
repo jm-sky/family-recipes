@@ -36,6 +36,7 @@ def get_stripe_client() -> StripeClient:
     return StripeClient(
         api_key=settings.stripe.secret_key,
         webhook_secret=settings.stripe.webhook_secret,
+        api_version=settings.stripe.api_version or None,
     )
 
 

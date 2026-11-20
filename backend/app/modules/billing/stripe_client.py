@@ -11,14 +11,17 @@ logger = logging.getLogger(__name__)
 class StripeClient:
     """Wrapper for Stripe SDK operations."""
 
-    def __init__(self, api_key: str, webhook_secret: str):
+    def __init__(self, api_key: str, webhook_secret: str, api_version: str | None = None):
         """Initialize Stripe client.
 
         Args:
             api_key: Stripe secret API key
             webhook_secret: Stripe webhook signing secret
+            api_version: Optional Stripe API version (e.g. 2026-07-29.dahlia)
         """
         stripe.api_key = api_key
+        if api_version:
+            stripe.api_version = api_version
         self.webhook_secret = webhook_secret
 
     # ==================== Customer Operations ====================

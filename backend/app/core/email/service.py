@@ -65,7 +65,7 @@ class EmailService:
         from jinja2 import Template
 
         template = Template(value)
-        return template.render(**context)
+        return str(template.render(**context))
 
     async def send_email(
         self,

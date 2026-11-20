@@ -110,6 +110,7 @@ export function useSubscription() {
   // Family plan is the source of truth for what the user sees
   const currentPlan = computed<PlanTier>(() => family.value?.plan ?? 'free')
   const currentPlanFeatures = computed(() => PLAN_FEATURES[currentPlan.value])
+  const isFamilyOwner = computed(() => family.value?.role === 'owner')
   const isFreeTier = computed(() => currentPlan.value === 'free')
   const isBasicTier = computed(() => currentPlan.value === 'basic')
   const isProTier = computed(() => currentPlan.value === 'pro')
@@ -124,14 +125,14 @@ export function useSubscription() {
   )
 
   const canUpgradeTo = (targetPlan: PlanTier) => {
-    if (!stripeEnabled || isGrandfathered.value) return false
+    if (!stripeEnabled || !isFamilyOwner.value || isGrandfathered.value) return false
     if (currentPlan.value === 'free') return targetPlan !== 'free'
     if (currentPlan.value === 'basic') return targetPlan === 'pro'
     return false
   }
 
   const canDowngradeTo = (targetPlan: PlanTier) => {
-    if (!stripeEnabled || isGrandfathered.value) return false
+    if (!stripeEnabled || !isFamilyOwner.value || isGrandfathered.value) return false
     if (currentPlan.value === 'pro') return targetPlan !== 'pro'
     if (currentPlan.value === 'basic') return targetPlan === 'free'
     return false
@@ -190,6 +191,7 @@ export function useSubscription() {
     isBasicTier,
     isProTier,
     isPaidTier,
+    isFamilyOwner,
     isGrandfathered,
     isCanceled,
     isPastDue,

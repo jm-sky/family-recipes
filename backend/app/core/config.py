@@ -656,6 +656,25 @@ class AISettings(BaseSettings):
         return parse_bool_value(v)
 
 
+class KeepSettings(BaseSettings):
+    """Google Keep shopping-list sync configuration (unofficial gkeepapi/gpsoauth)."""
+
+    model_config = _base_config
+
+    enabled: bool = Field(default=False, validation_alias="KEEP_SYNC_ENABLED", description="Enable Google Keep sync features")
+    token_encryption_key: str = Field(
+        default="",
+        validation_alias="KEEP_TOKEN_ENCRYPTION_KEY",
+        description="Fernet encryption key for Keep master tokens",
+    )
+
+    @field_validator("enabled", mode="before")
+    @classmethod
+    def parse_bool_field(cls, v: str | bool) -> bool:
+        """Parse boolean field from string or bool."""
+        return parse_bool_value(v)
+
+
 class RedisSettings(BaseSettings):
     """Redis configuration for token blacklist and challenge storage."""
 
@@ -730,8 +749,23 @@ class StripeSettings(BaseSettings):
         validation_alias="STRIPE_WEBHOOK_SECRET",
         description="Stripe webhook signing secret",
     )
+    api_version: str = Field(
+        default="2026-07-29.dahlia",
+        validation_alias="STRIPE_API_VERSION",
+        description="Stripe API version",
+    )
 
-    # Price IDs (configured in Stripe Dashboard)
+    # Price IDs — Basic / Pro (PLN); see docs/plans/2026-08-03-monetization-stripe.md
+    basic_monthly_price_id: str = Field(
+        default="",
+        validation_alias="STRIPE_BASIC_MONTHLY_PRICE_ID",
+        description="Stripe price ID for Basic monthly subscription",
+    )
+    basic_annual_price_id: str = Field(
+        default="",
+        validation_alias="STRIPE_BASIC_ANNUAL_PRICE_ID",
+        description="Stripe price ID for Basic annual subscription",
+    )
     pro_monthly_price_id: str = Field(
         default="",
         validation_alias="STRIPE_PRO_MONTHLY_PRICE_ID",
@@ -742,15 +776,16 @@ class StripeSettings(BaseSettings):
         validation_alias="STRIPE_PRO_ANNUAL_PRICE_ID",
         description="Stripe price ID for Pro annual subscription",
     )
+    # Deprecated gear-stack names — kept so billing module loads until Faza A remaps tiers
     pro_plus_monthly_price_id: str = Field(
         default="",
         validation_alias="STRIPE_PRO_PLUS_MONTHLY_PRICE_ID",
-        description="Stripe price ID for Pro Plus monthly subscription",
+        description="Deprecated: was Pro Plus monthly (unused in family-recipes)",
     )
     pro_plus_annual_price_id: str = Field(
         default="",
         validation_alias="STRIPE_PRO_PLUS_ANNUAL_PRICE_ID",
-        description="Stripe price ID for Pro Plus annual subscription",
+        description="Deprecated: was Pro Plus annual (unused in family-recipes)",
     )
 
     @field_validator("enabled", mode="before")
@@ -798,6 +833,7 @@ class Settings(BaseSettings):
     redis: RedisSettings = Field(default_factory=RedisSettings)
     webauthn: WebAuthnSettings = Field(default_factory=WebAuthnSettings)
     stripe: StripeSettings = Field(default_factory=StripeSettings)
+    keep: KeepSettings = Field(default_factory=KeepSettings)
     health: HealthSettings = Field(default_factory=HealthSettings)
 
     # Legacy compatibility - still accessible at root level

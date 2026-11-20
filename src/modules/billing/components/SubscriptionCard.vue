@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { useSubscription } from '../composables/useSubscription'
-import { PLAN_FEATURES } from '../types'
+import { formatPln, PLAN_FEATURES } from '../types'
 import { getTranslatedFeatures, getTranslatedPlanName } from '../utils/planTranslations'
 
 const { t } = useI18n()
@@ -20,6 +20,7 @@ const {
   isPastDue,
   cancelAtPeriodEnd,
   isPaidTier,
+  isFamilyOwner,
   stripeEnabled,
   openBillingPortal,
   isOpeningPortal,
@@ -67,11 +68,11 @@ const translatedPlanName = computed(() => getTranslatedPlanName(currentPlan.valu
         </Badge>
       </div>
       <CardDescription>
-        <span v-if="stripeEnabled && currentPlanFeatures && subscription?.billingInterval === 'monthly'">
-          ${{ currentPlanFeatures.price.monthly }}{{ t('billing.perMonth') }}
+        <span v-if="stripeEnabled && currentPlanFeatures && subscription?.billingInterval === 'month'">
+          {{ formatPln(currentPlanFeatures.price.monthly) }}{{ t('billing.perMonth') }}
         </span>
-        <span v-else-if="stripeEnabled && currentPlanFeatures && subscription?.billingInterval === 'annual'">
-          ${{ currentPlanFeatures.price.annualMonthly }}{{ t('billing.perMonth') }} {{ t('billing.billedAnnually') }}
+        <span v-else-if="stripeEnabled && currentPlanFeatures && subscription?.billingInterval === 'year'">
+          {{ formatPln(currentPlanFeatures.price.annualMonthly) }}{{ t('billing.perMonth') }} {{ t('billing.billedAnnually') }}
         </span>
         <span v-else-if="currentPlanFeatures?.memberLimit !== undefined">
           {{ currentPlanFeatures.memberLimit === null
@@ -121,7 +122,7 @@ const translatedPlanName = computed(() => getTranslatedPlanName(currentPlan.valu
       </div>
     </CardContent>
 
-    <CardFooter v-if="stripeEnabled && isPaidTier && !isGrandfathered">
+    <CardFooter v-if="stripeEnabled && isFamilyOwner && isPaidTier && !isGrandfathered">
       <Button
         variant="outline"
         class="w-full"

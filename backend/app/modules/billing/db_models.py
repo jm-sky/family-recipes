@@ -67,7 +67,7 @@ class SubscriptionDB(Base):
 
     # Constraints
     __table_args__ = (
-        CheckConstraint("plan_tier IN ('free', 'pro', 'pro_plus')", name="valid_plan_tier"),
+        CheckConstraint("plan_tier IN ('free', 'basic', 'pro')", name="valid_plan_tier"),
         CheckConstraint("billing_interval IN ('month', 'year')", name="valid_billing_interval"),
         CheckConstraint(
             "status IN ('active', 'canceled', 'past_due', 'unpaid', 'incomplete', 'trialing')",

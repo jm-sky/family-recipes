@@ -1,12 +1,20 @@
 <script setup lang="ts">
 import { HttpStatusCode, isAxiosError } from 'axios'
-import { ArrowLeft, Folders, Minus, Plus, Search } from 'lucide-vue-next'
+import { ArrowLeft, Folders, Minus, Notebook, Plus, Search } from 'lucide-vue-next'
 import { computed, reactive, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Checkbox } from '@/components/ui/checkbox'
+import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import { Input } from '@/components/ui/input'
 import { Progress } from '@/components/ui/progress'
 import Select from '@/components/ui/select/Select.vue'
@@ -21,6 +29,7 @@ import {
   SheetTitle,
 } from '@/components/ui/sheet'
 import AuthenticatedLayout from '@/layouts/AuthenticatedLayout.vue'
+import { useKeepIntegration } from '@/modules/settings/composables/useKeepIntegration'
 import CategoryIcon from '@/modules/shopping/components/CategoryIcon.vue'
 import ProductAddPanel from '@/modules/shopping/components/ProductAddPanel.vue'
 import { useShoppingList } from '@/modules/shopping/composables/useShoppingList'
@@ -31,6 +40,7 @@ import { clearLastShoppingPath } from '@/modules/shopping/utils/lastShoppingPath
 import { useIsMobile } from '@/shared/composables/useIsMobile'
 import { useMobileAppBarTitle } from '@/shared/composables/useMobileAppBarTitle'
 import {
+  config,
   SHOPPING_LIST_GROUP_BY_CATEGORY_KEY,
   SHOPPING_LIST_SORT_KEY,
 } from '@/shared/config/config'
@@ -59,6 +69,33 @@ watch(
 )
 
 useMobileAppBarTitle(computed(() => (isMobile.value ? list.value?.name ?? null : null)))
+
+const keepSyncEnabled = config.features.keepSync.enabled
+const { status: keepStatus, mirrors: keepMirrors, createMirror, isCreatingMirror, deleteMirror, toggleAutoSync, syncNow, isSyncing } = useKeepIntegration()
+const keepMirror = computed(() => keepMirrors.value?.find((m) => m.shoppingListId === listId.value) ?? null)
+
+const keepSyncLabel = computed(() => {
+  if (!keepMirror.value) return null
+  if (keepStatus.value?.lastError) return t('shopping.list.keepSync.error')
+  if (!keepMirror.value.lastPushedAt) return null
+  return t('shopping.list.keepSync.synced', { time: new Date(keepMirror.value.lastPushedAt).toLocaleTimeString() })
+})
+
+async function handleCreateKeepMirror() {
+  await createMirror({ shoppingListId: listId.value })
+}
+
+async function handleKeepSyncNow() {
+  if (keepMirror.value) await syncNow(keepMirror.value.id)
+}
+
+async function handleKeepUnlink() {
+  if (keepMirror.value) await deleteMirror(keepMirror.value.id)
+}
+
+async function handleKeepAutoSyncToggle(autoSync: boolean) {
+  if (keepMirror.value) await toggleAutoSync({ mirrorId: keepMirror.value.id, autoSync })
+}
 
 const addSheetOpen = ref(false)
 const nameDrafts = reactive<Record<string, string>>({})
@@ -282,12 +319,55 @@ async function decrementItem(item: ShoppingItem) {
 
       <template v-else-if="list">
         <div class="space-y-2">
-          <h1
-            class="text-2xl font-bold tracking-tight"
-            :class="{ 'sr-only': isMobile }"
-          >
-            {{ list.name }}
-          </h1>
+          <div class="flex items-center justify-between gap-2">
+            <h1
+              class="text-2xl font-bold tracking-tight"
+              :class="{ 'sr-only': isMobile }"
+            >
+              {{ list.name }}
+            </h1>
+
+            <template v-if="keepSyncEnabled && keepStatus?.connected">
+              <Button
+                v-if="!keepMirror"
+                type="button"
+                variant="outline"
+                size="sm"
+                :loading="isCreatingMirror"
+                @click="handleCreateKeepMirror"
+              >
+                <Notebook class="size-4" />
+                {{ t('shopping.list.keepSync.create') }}
+              </Button>
+
+              <DropdownMenu v-else>
+                <DropdownMenuTrigger as-child>
+                  <Button type="button" variant="outline" size="sm">
+                    <Notebook class="size-4" />
+                    {{ t('shopping.list.keepSync.menu') }}
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem :disabled="isSyncing" @click="handleKeepSyncNow">
+                    {{ t('shopping.list.keepSync.syncNow') }}
+                  </DropdownMenuItem>
+                  <DropdownMenuCheckboxItem
+                    :model-value="keepMirror.autoSync"
+                    @update:model-value="handleKeepAutoSyncToggle"
+                  >
+                    {{ t('shopping.list.keepSync.autoSync') }}
+                  </DropdownMenuCheckboxItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem variant="destructive" @click="handleKeepUnlink">
+                    {{ t('shopping.list.keepSync.unlink') }}
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </template>
+          </div>
+          <p v-if="keepSyncLabel" class="text-xs text-muted-foreground">
+            {{ keepSyncLabel }}
+          </p>
           <div class="flex items-center gap-3">
             <Progress :model-value="progress" class="h-2 flex-1" />
             <span class="whitespace-nowrap text-xs text-muted-foreground">

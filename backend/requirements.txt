@@ -66,3 +66,7 @@ redis>=5.0.1
 
 # Payment Processing (Stripe)
 stripe>=8.0.0
+
+# Google Keep Integration (unofficial, reverse-engineered)
+gkeepapi>=0.15
+gpsoauth>=1.0

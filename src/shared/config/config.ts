@@ -70,9 +70,13 @@ export const config = {
     inlineEditing: {
       enabled: !(import.meta.env.VITE_ENABLE_INLINE_EDITING === 'false'),
     },
+    keepSync: {
+      enabled: import.meta.env.VITE_ENABLE_KEEP_SYNC === 'true',
+    },
   },
   stripe: {
     enabled: import.meta.env.VITE_STRIPE_ENABLED === 'true',
+    publishableKey: (import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY as string | undefined) || '',
   },
   storage: {
     // Maximum file size for regular users (20 MB)

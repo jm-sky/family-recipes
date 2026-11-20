@@ -1,43 +1,46 @@
 /**
- * Utility functions for translating plan-related content
+ * Plan feature translation helpers
  */
 
-import type { PlanTier } from '../types'
+type TranslateFn = (key: string, fallback?: string) => string
 
-type TranslateFunction = (key: string, ...args: unknown[]) => string
-
-const featureKeyMap: Record<PlanTier, Record<string, string>> = {
+const FEATURE_KEY_MAP: Record<string, Record<string, string>> = {
   free: {
     'Up to 2 family members': 'billing.plans.free.features.memberLimit',
     'Shared shopping lists': 'billing.plans.free.features.shoppingLists',
     'Shared family recipes': 'billing.plans.free.features.recipes',
+    'Google Keep export': 'billing.plans.free.features.keepExport',
+    'AI import with your own OpenRouter key': 'billing.plans.free.features.aiByok',
   },
   basic: {
     'Up to 5 family members': 'billing.plans.basic.features.memberLimit',
     'Everything in Free': 'billing.plans.basic.features.everythingInFree',
-    'Shared shopping lists and recipes': 'billing.plans.basic.features.shoppingAndRecipes',
+    'AI recipe import (system key, limited)': 'billing.plans.basic.features.aiImport',
   },
   pro: {
     'Unlimited family members': 'billing.plans.pro.features.memberLimit',
     'Everything in Basic': 'billing.plans.pro.features.everythingInBasic',
-    'AI-powered recipe import': 'billing.plans.pro.features.aiImport',
+    'Higher AI budget (system key)': 'billing.plans.pro.features.aiImport',
   },
 }
 
 export function getTranslatedFeatures(
-  planTier: PlanTier,
+  planTier: string,
   features: string[],
-  t: TranslateFunction,
+  t: TranslateFn,
 ): string[] {
-  const keyMap = featureKeyMap[planTier]
-
+  const map = FEATURE_KEY_MAP[planTier] ?? {}
   return features.map((feature) => {
-    const translationKey = keyMap[feature]
-    return translationKey ? t(translationKey) : feature
+    const key = map[feature]
+    return key ? t(key, feature) : feature
   })
 }
 
-export function getTranslatedPlanName(planTier: PlanTier, t: TranslateFunction): string {
+export function getPlanFullName(planTier: string, t: TranslateFn): string {
   const planKey = `billing.plans.${planTier}.fullName` as const
-  return t(planKey)
+  return t(planKey, planTier)
+}
+
+export function getTranslatedPlanName(planTier: string, t: TranslateFn): string {
+  return getPlanFullName(planTier, t)
 }

@@ -59,6 +59,8 @@ export const en = {
           memberLimit: 'Up to 2 family members',
           shoppingLists: 'Shared shopping lists',
           recipes: 'Shared family recipes',
+          keepExport: 'Google Keep export',
+          aiByok: 'AI import with your own OpenRouter key',
         },
       },
       basic: {
@@ -68,28 +70,29 @@ export const en = {
         features: {
           memberLimit: 'Up to 5 family members',
           everythingInFree: 'Everything in Free',
-          shoppingAndRecipes: 'Shared shopping lists and recipes',
+          aiImport: 'AI recipe import (system key, limited)',
         },
       },
       pro: {
         name: 'Pro',
-        description: 'Unlimited family members',
+        description: 'Unlimited members + higher AI budget',
         fullName: 'Pro Plan',
         features: {
           memberLimit: 'Unlimited family members',
           everythingInBasic: 'Everything in Basic',
-          aiImport: 'AI-powered recipe import',
+          aiImport: 'Higher AI budget (system key)',
         },
       },
     },
     upgradeBanner: {
-      title: 'Need more family members?',
-      description: 'Upgrade to Basic or Pro to invite more people to your family.',
+      title: 'Need more members or AI?',
+      description: 'Upgrade to Basic or Pro to invite more people and use AI import.',
       button: 'View Plans',
     },
     errors: {
       checkoutFailed: 'Failed to create checkout session. Please try again.',
       portalFailed: 'Failed to open billing portal. Please try again.',
+      ownerOnly: 'Only the family owner can manage billing.',
     },
   },
 }

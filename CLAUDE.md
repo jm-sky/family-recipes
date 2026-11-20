@@ -107,7 +107,7 @@ Vue 3.5 `<script setup>` + TypeScript strict + Pinia + TanStack Query + Tailwind
 ## Feature flags (stan MVP)
 
 - `AI_ENABLED` / `VITE_ENABLE_AI` — włączają AI (import przepisów z URL + chat/settings); lokalnie zwykle `true`
-- `STRIPE_ENABLED=false` — billing wyłączony (plany enforce'owane lokalnie: free/basic/pro)
+- `STRIPE_ENABLED=true` / `VITE_STRIPE_ENABLED=true` — billing włączony (klucze **test** Stripe); Faza B smoke
 - `EMAIL_ENABLED=false`, `EMAIL_ADAPTER=file` — maile do pliku w dev
 
 ## Build status (Fazy z build-plan.md)

@@ -137,8 +137,11 @@ class TestCreateCheckoutSession:
         mock_session.url = "https://checkout.stripe.com/test"
         mock_stripe_client.create_checkout_session.return_value = mock_session
 
-        with patch("app.modules.billing.service.settings") as mock_settings:
+        with patch("app.modules.billing.plan_constants.settings") as mock_settings:
+            mock_settings.stripe.basic_monthly_price_id = ""
+            mock_settings.stripe.basic_annual_price_id = ""
             mock_settings.stripe.pro_monthly_price_id = "price_pro_monthly"
+            mock_settings.stripe.pro_annual_price_id = ""
 
             response = await billing_service.create_checkout_session(
                 user_id="user123",
@@ -191,12 +194,15 @@ class TestCreateCheckoutSession:
         mock_session.url = "https://checkout.stripe.com/upgrade"
         mock_stripe_client.create_checkout_session.return_value = mock_session
 
-        with patch("app.modules.billing.service.settings") as mock_settings:
-            mock_settings.stripe.pro_plus_monthly_price_id = "price_pro_plus_monthly"
+        with patch("app.modules.billing.plan_constants.settings") as mock_settings:
+            mock_settings.stripe.basic_monthly_price_id = "price_basic_monthly"
+            mock_settings.stripe.basic_annual_price_id = ""
+            mock_settings.stripe.pro_monthly_price_id = "price_pro_monthly"
+            mock_settings.stripe.pro_annual_price_id = ""
 
             response = await billing_service.create_checkout_session(
                 user_id="user123",
-                plan_tier="pro_plus",
+                plan_tier="basic",
                 billing_interval="monthly",
                 success_url="https://example.com/success",
                 cancel_url="https://example.com/cancel",
@@ -294,24 +300,26 @@ class TestGetSubscriptionLimits:
         response = await billing_service.get_subscription_limits("user123")
 
         assert response.planTier == "pro"
-        assert response.aiMonthlyTokenLimit == 1_000_000
+        assert response.aiMonthlyTokenLimit == 2_000_000
         assert response.requiresByok is False
         assert response.canUseAdvancedFeatures is True
 
     @pytest.mark.asyncio
-    async def test_get_limits_pro_plus_tier(
+    async def test_get_limits_basic_tier(
         self,
         billing_service: BillingService,
         mock_repository: AsyncMock,
         sample_subscription: SubscriptionDB,
     ) -> None:
-        """Test limits for pro_plus tier."""
-        sample_subscription.plan_tier = "pro_plus"
+        """Test limits for basic tier."""
+        sample_subscription.plan_tier = "basic"
         mock_repository.get_subscription_by_user_id.return_value = sample_subscription
 
         response = await billing_service.get_subscription_limits("user123")
 
-        assert response.planTier == "pro_plus"
-        assert response.aiMonthlyTokenLimit == 10_000_000
+        assert response.planTier == "basic"
+        assert response.aiMonthlyTokenLimit == 500_000
+        assert response.requiresByok is False
+        assert response.canUseAdvancedFeatures is True
         assert response.requiresByok is False
         assert response.canUseAdvancedFeatures is True

@@ -1,6 +1,6 @@
 # Plan: Eksport list zakupów do Google Keep (Gmail)
 
-**Status:** `planned`  
+**Status:** `in progress` — Faza A+B done (2026-08-01, commit `e5c6200`), Faza C/D not started  
 **Data:** 2026-07-07  
 **Kontekst:** Użytkownik korzysta z Google Keep, żona z Domownika; Family Recipes jest hubem rodziny. Potrzebny **jednokierunkowy** sync listy zakupów **Family → Keep** (lustro osobiste), bez ręcznego kopiowania.
 
@@ -218,8 +218,8 @@ Opcjonalnie współdzielony klucz szyfrowania z AI (`AI_TOKEN_ENCRYPTION_KEY`) l
 
 | Faza | Zakres | Nakład | Status |
 |------|--------|--------|--------|
-| **A — Fundament** | migracja, `keep_client`, connect/disconnect, mirror + ręczny push, testy mock | 1.5–2 d | `todo` |
-| **B — UI** | settings connect, mirror na liście, status sync, i18n | 1 d | `todo` |
+| **A — Fundament** | migracja, `keep_client`, connect/disconnect, mirror + ręczny push, testy mock | 1.5–2 d | `done` (2026-08-01) |
+| **B — UI** | settings connect, mirror na liście, status sync, i18n | 1 d | `done` (2026-08-01) |
 | **C — Auto-sync** | hooki shopping + debounced worker | 1 d | `todo` |
 | **D — Polish** | CLI helper tokenu, lepsze błędy, retry | 0.5 d | `todo` |
 
@@ -231,15 +231,17 @@ Opcjonalnie współdzielony klucz szyfrowania z AI (`AI_TOKEN_ENCRYPTION_KEY`) l
 
 ### Faza A+B (MVP)
 
+**Uwaga (2026-08-01):** kod zaimplementowany i zweryfikowany testami jednostkowymi/integracyjnymi z mockiem `KeepClient` — poniższe end-to-end kryteria wymagają jednak żywego konta Google Keep (prawdziwy master token), którego nie mamy w tym środowisku. Odznaczone dopóki ktoś nie przejdzie przez flow ręcznie.
+
 - [ ] Użytkownik z Gmail łączy Keep (master token), widzi status „Połączono”.
 - [ ] Z listy „Dom” tworzy mirror → w Keep pojawia się notatka z checklistą.
 - [ ] Dodanie pozycji w aplikacji + „Sync teraz” → nowa linia w Keep.
 - [ ] Odhaczenie w aplikacji → po sync pozycja odhaczona w Keep.
 - [ ] Usunięcie pozycji w aplikacji → znika z Keep po sync.
 - [ ] Odhaczenie **tylko w Keep** — po sync wraca stan z aplikacji (udokumentowane w UI).
-- [ ] `KEEP_SYNC_ENABLED=false` — brak endpointów / ukryty UI.
-- [ ] Token zaszyfrowany w DB; disconnect czyści dane.
-- [ ] PL + EN.
+- [x] `KEEP_SYNC_ENABLED=false` — brak endpointów / ukryty UI (`test_keep_router.py::TestFeatureFlagGate`).
+- [x] Token zaszyfrowany w DB; disconnect czyści dane (Fernet, `KEEP_TOKEN_ENCRYPTION_KEY` osobny od AI).
+- [x] PL + EN.
 
 ### Testy
 

@@ -17,6 +17,7 @@ from .exceptions import (
     BillingException,
     CannotDowngradeGrandfatheredError,
     FreeTrierRequiresBYOKError,
+    InsufficientPermissionsError,
     InvalidBillingIntervalError,
     InvalidPlanTierError,
     StripeAPIError,
@@ -47,6 +48,18 @@ logger = logging.getLogger(__name__)
 
 # Create router
 router = APIRouter(prefix="/billing", tags=["Billing"])
+
+
+async def _require_family_owner(db: AsyncSession, user_id: str) -> None:
+    """Only the family owner (membership role) may manage Stripe billing."""
+    from app.modules.family.repository import FamilyRepository
+
+    family_repo = FamilyRepository(db)
+    membership = await family_repo.get_membership_for_user(user_id)
+    if membership is None:
+        raise InsufficientPermissionsError("You must belong to a family to manage billing")
+    if membership.role != "owner":
+        raise InsufficientPermissionsError("Only the family owner can manage billing")
 
 
 @router.get(
@@ -112,12 +125,15 @@ async def create_checkout_session(
                 detail="User not found",
             )
 
+        await _require_family_owner(db, current_user.id)
+
         # Update Stripe client with user email
         from .stripe_client import StripeClient
 
         stripe_client = StripeClient(
             api_key=settings.stripe.secret_key,
             webhook_secret=settings.stripe.webhook_secret,
+            api_version=settings.stripe.api_version or None,
         )
 
         # Create customer with email if needed
@@ -130,6 +146,11 @@ async def create_checkout_session(
         )
 
         return session
+    except InsufficientPermissionsError as e:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=str(e),
+        )
     except InvalidPlanTierError as e:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -170,6 +191,7 @@ async def create_portal_session(
     request_data: CreatePortalSessionRequest,
     current_user: CurrentUser,
     billing_service: BillingServiceDep,
+    db: AsyncSession = Depends(get_db),
 ) -> PortalSessionResponse:
     """
     Create a Stripe Billing Portal session for subscription management.
@@ -181,9 +203,15 @@ async def create_portal_session(
         Portal session URL to redirect user
     """
     try:
+        await _require_family_owner(db, current_user.id)
         return await billing_service.create_portal_session(
             user_id=current_user.id,
             return_url=str(request_data.returnUrl),
+        )
+    except InsufficientPermissionsError as e:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=str(e),
         )
     except SubscriptionNotFoundError:
         raise HTTPException(
